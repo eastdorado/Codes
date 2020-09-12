@@ -3,10 +3,11 @@
 
 import sys
 import random
-import copy
+import os
 from functools import partial
 from PyQt5 import QtWidgets, QtGui, QtCore
-from utilities import Utils
+from utilities import Utils, MyLog
+from Logging import Logger
 
 
 class Chess(QtWidgets.QFrame):
@@ -303,6 +304,9 @@ class LandBattleChess(QtWidgets.QWidget):
         self.line_w = self.width() - 2 * self.margin - self.chess_w
         self.line_h = self.height() - 2 * self.margin - self.chess_h
         self.toolbar = MyToolbar(self)
+
+        file_name = os.path.split(__file__)[-1].split(".")[0]  # 当前文件名称
+        self.log = MyLog(log_file=f'{file_name}.log', log_tags="")
         # endregion
 
         # region 游戏参数及设置
@@ -361,7 +365,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[0][3] = 4
         self.board[11][1] = 4
         self.board[11][3] = 4
-        # print(self.board)
+        # self.log.debug(self.board)
         # endregion
 
         self.replay()
@@ -639,7 +643,7 @@ class LandBattleChess(QtWidgets.QWidget):
                 chess_cur = self.composition[self.move_start[0]][self.move_start[1]]
                 chess_cur.update_me(None, 0)
 
-            elif self.move_start:  # 能移动则改变当前棋子
+            elif self.move_start:  # 能移动则改变当前棋子  地雷、军旗不能移动
                 if self.move_end:  # 擦除上次点击的红框
                     chess = self.composition[self.move_end[0]][self.move_end[1]]
                     # print(self.move_end, chess)
@@ -932,3 +936,6 @@ if __name__ == '__main__':
     # form = MyToolbar()
     form.show()
     sys.exit(app.exec_())
+
+    # MyLog('test.log', 1).debug('haohao')
+

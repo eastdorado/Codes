@@ -1640,6 +1640,76 @@ class AnimWin(QtWidgets.QWidget):
             self.move(window.topLeft())
 
 
+class MyLog(object):
+    log_path = "E:/Codes/Logs"
+
+    # 设置输出的等级
+    # LEVELS = {'NOTSET': logging.NOTSET,
+    #           'DEBUG': logging.DEBUG,
+    #           'INFO': logging.INFO,
+    #           'WARNING': logging.WARNING,
+    #           'ERROR': logging.ERROR,
+    #           'CRITICAL': logging.CRITICAL}
+
+    # 用字典保存日志输出格式
+    # format_dict = {0: logging.Formatter('%(message)s'),
+    #                1: logging.Formatter('%(name)s - %(message)s'),
+    #                2: logging.Formatter('%(filename)s - %(module)s - %(lineno)d - %(levelname)s - %(message)s'),
+    #                3: logging.Formatter('%(thread)d - %(threadName)s - %(process)d - %(message)s'),
+    #                4: logging.Formatter('%(funcName)s - %(created)f - %(levelname)s - %(message)s'),
+    #                5: logging.Formatter('%(pathname)s - %(levelno)s - %(levelname)s - %(message)s'),
+    #                6: logging.Formatter('%(asctime)s - %(msecs)d - %(relativeCreated)d - %(levelname)s - %(message)s')}
+
+    def __init__(self, log_file=None, flag=1, log_tags='', log_format=0):
+        self.log_file = log_file if log_file else 'test.log'
+        self.flag = flag  # 0仅写入日志文件， 1二者同时输出 2仅屏幕输出
+        self.log_tags = log_tags
+        self.log_format = log_format
+
+        # self.file_name = os.path.split(__file__)[-1].split(".")[0]  # 当前文件名称
+
+        if not os.path.exists(self.log_path):
+            os.makedirs(self.log_path)
+
+        # print(self.get_cur_info())
+        # print(self.get_cur())
+        # self.debug(f'{self.flag} ddd {self.file_name}', '好啊')
+
+    def debug(self, *args):
+        sf = sys._getframe()
+        # sf.f_back.f_code.co_name  # 父级调用函数名称
+        # sf.f_back.f_lineno  # 父级调用处的行号
+        # sf.f_code.co_name  # 调用函数名称
+        # sf.f_lineno  # 调用处行号
+
+        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}'
+
+        if self.flag < 2:
+            with open(f'{self.log_path}/{self.log_file}', 'w') as f:
+                f.write(msg)
+
+        if self.flag:
+            # print(f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】', *args)
+            print(msg)
+
+    @staticmethod
+    def get_cur():
+        return sys._getframe().f_code.co_name, sys._getframe().f_back.f_code.co_name
+        # return sys._getframe().f_code.co_name, sys._getframe().f_back.f_code.co_name
+
+    @staticmethod
+    def get_cur_info():
+        """
+            Return the frame object for the caller's stack frame.
+            返回调用时的函数和行号
+        """
+        try:
+            raise Exception
+        except:
+            f = sys.exc_info()[2].tb_frame.f_back
+        return f.f_code.co_name, f.f_lineno
+
+
 # 样式管理类
 class StyleSheet(object):
     """
