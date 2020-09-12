@@ -1,0 +1,118 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui_main.ui'
+#
+# Created by: PyQt5 UI code generator 5.13.0
+#
+# WARNING! All changes made in this file will be lost!
+
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+# from PySide2 import QtCore, QtGui, QtWidgets
+
+
+class Ui_Main(object):
+    def setupUi(self, Main):
+        Main.setObjectName("Main")
+        Main.resize(1199, 683)
+        self.horizontalLayout = QtWidgets.QHBoxLayout(Main)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+
+        self.wg_left = QtWidgets.QWidget()
+        self.vl_left = QtWidgets.QVBoxLayout(self.wg_left)
+        self.vl_left.setObjectName("vl_left")
+        self.pushButton_vault = QtWidgets.QPushButton(Main)
+        self.pushButton_vault.setObjectName("pushButton_vault")
+        self.vl_left.addWidget(self.pushButton_vault)
+        self.listWidget_left = QtWidgets.QListWidget(Main)
+        self.listWidget_left.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.listWidget_left.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.listWidget_left.setObjectName("listWidget_left")
+        self.vl_left.addWidget(self.listWidget_left)
+        # self.horizontalLayout.addLayout(self.vl_left)
+
+        self.wg_mid = QtWidgets.QWidget()
+        self.vl_mid = QtWidgets.QVBoxLayout(self.wg_mid)
+        self.vl_mid.setObjectName("vl_mid")
+        self.hl_mid = QtWidgets.QHBoxLayout()
+        self.hl_mid.setObjectName("hl_mid")
+        self.toolButton_search = QtWidgets.QToolButton(Main)
+        self.toolButton_search.setObjectName("toolButton_search")
+        self.hl_mid.addWidget(self.toolButton_search)
+        self.lineEdit = QtWidgets.QLineEdit(Main)
+        self.lineEdit.setObjectName("lineEdit")
+        self.hl_mid.addWidget(self.lineEdit)
+        self.vl_mid.addLayout(self.hl_mid)
+        self.listWidget_mid = QtWidgets.QListWidget(Main)
+        self.listWidget_mid.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.listWidget_mid.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.listWidget_mid.setObjectName("listWidget_mid")
+        self.vl_mid.addWidget(self.listWidget_mid)
+        # self.horizontalLayout.addLayout(self.vl_mid)
+
+        self.wg_right = QtWidgets.QWidget()
+        self.vl_right = QtWidgets.QVBoxLayout(self.wg_right)
+        self.vl_right.setObjectName("vl_right")
+        self.wg_right_title = QtWidgets.QWidget()
+        self.hl_right = QtWidgets.QHBoxLayout(self.wg_right_title)
+        self.hl_right.setObjectName("hl_right")
+        self.toolButton_add = QtWidgets.QToolButton(Main)
+        self.toolButton_add.setObjectName("toolButton_add")
+        self.hl_right.addWidget(self.toolButton_add)
+        self.toolButton_edit = QtWidgets.QToolButton(Main)
+        self.toolButton_edit.setObjectName("toolButton_edit")
+        self.hl_right.addWidget(self.toolButton_edit)
+        self.toolButton_setting = QtWidgets.QToolButton(Main)
+        self.toolButton_setting.setObjectName("toolButton_setting")
+        self.hl_right.addWidget(self.toolButton_setting)
+        self.toolButton_3 = QtWidgets.QToolButton(Main)
+        self.toolButton_3.setObjectName("toolButton_3")
+        self.hl_right.addWidget(self.toolButton_3)
+        # self.vl_right.addLayout(self.hl_right)
+        self.vl_right.addWidget(self.wg_right_title)
+        self.hl_right_2 = QtWidgets.QHBoxLayout()
+        self.hl_right_2.setObjectName("hl_right_2")
+        self.pushButton_unit = QtWidgets.QPushButton(Main)
+        self.pushButton_unit.setEnabled(True)
+        self.pushButton_unit.setObjectName("pushButton_unit")
+        self.hl_right_2.addWidget(self.pushButton_unit)
+        self.toolButton_favority = QtWidgets.QToolButton(Main)
+        self.toolButton_favority.setObjectName("toolButton_favority")
+        self.hl_right_2.addWidget(self.toolButton_favority)
+        self.toolButton_more = QtWidgets.QToolButton(Main)
+        self.toolButton_more.setObjectName("toolButton_more")
+        self.hl_right_2.addWidget(self.toolButton_more)
+        self.vl_right.addLayout(self.hl_right_2)
+        self.listWidget_right = QtWidgets.QListWidget(Main)
+        self.listWidget_right.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.listWidget_right.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.listWidget_right.setObjectName("listWidget_right")
+        self.vl_right.addWidget(self.listWidget_right)
+        # self.horizontalLayout.addLayout(self.vl_right)
+
+        self.retranslateUi(Main)
+        self.listWidget_mid.clicked['QModelIndex'].connect(Main.slot_mid_clicked)
+        self.pushButton_vault.clicked.connect(Main.slot_tools_clicked)
+        self.lineEdit.textChanged['QString'].connect(Main.slot_keyword_changed)
+        self.listWidget_left.clicked['QModelIndex'].connect(Main.slot_left_clicked)
+        self.toolButton_add.clicked.connect(Main.slot_tmp)
+        self.toolButton_edit.clicked.connect(Main.slot_tmp)
+        self.toolButton_setting.clicked.connect(Main.slot_tmp)
+        self.toolButton_3.clicked.connect(Main.slot_tmp)
+        self.toolButton_favority.clicked.connect(Main.slot_tmp)
+        self.toolButton_more.clicked.connect(Main.slot_tmp)
+        self.toolButton_search.clicked.connect(Main.slot_tmp)
+        QtCore.QMetaObject.connectSlotsByName(Main)
+
+    def retranslateUi(self, Main):
+        _translate = QtCore.QCoreApplication.translate
+        Main.setWindowTitle(_translate("Main", "miKu 2020"))
+        self.pushButton_vault.setText(_translate("Main", "保险库"))
+        self.toolButton_search.setText(_translate("Main", "关键字"))
+        self.toolButton_add.setText(_translate("Main", "新建"))
+        self.toolButton_edit.setText(_translate("Main", "编辑"))
+        self.toolButton_setting.setText(_translate("Main", "..."))
+        self.toolButton_3.setText(_translate("Main", "..."))
+        self.pushButton_unit.setText(_translate("Main", "PushButton"))
+        self.toolButton_favority.setText(_translate("Main", "..."))
+        self.toolButton_more.setText(_translate("Main", "..."))

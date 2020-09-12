@@ -1,0 +1,199 @@
+QTreeWidget{
+    background-color: #5B677A;
+    /* set the font properties*/
+    font-size:17px;
+    color: white;
+}
+QTreeWidget::item{
+    margin:13px;
+    background: #5B677A;
+    background-clip: margin;
+}
+QTreeWidget::branch{
+    background:#5B677A;
+    }
+QTreeView::item:hover {
+    background: rgb(69, 187, 217);;
+}
+QTreeView::item:selected:active{
+    background: rgb(63, 147, 168);
+}
+QTreeView::item:selected:!active {
+    background: rgb(63, 147, 168);
+}
+QTreeWidget::branch:closed:has-children:!has-siblings,
+QTreeWidget::branch:closed:has-children:has-siblings {
+    border-image: none;
+    image: url(:/image/plus.png);
+}
+QTreeWidget::branch:open:has-children:!has-siblings,
+QTreeWidget::branch:open:has-children:has-siblings  {
+    border-image: none;
+    image: url(:/image/minus.png);
+}
+QTreeWidget::branch:!has-children:has-siblings:adjoins-item{
+    border-image:none;
+    image:url(:/image/test.png);
+    }
+QTreeWidget::branch:!has-children:!has-siblings:adjoins-item{
+    border-image:none;
+    image:url(:/image/test.png);
+    }
+
+
+/*  tab 页面 */
+QTabWidget::pane{border-width:1px;border-color:rgb(48, 104, 151);
+    border-style: outset;background-color: rgb(132, 171, 208);
+    background: transparent;}
+QTabWidget::tab-bar{border-width:0px;}
+QTabBar::tab{border-bottom-color: #C2C7CB;
+             border-top-left-radius: 0px;
+             border-top-right-radius: 0px;
+             max-width: 75px; min-width:75px; min-height:25px;
+             font:14px Times New Roman;padding: 0px;}
+QTabBar::scroller {width:25;border:0;padding: 0px;}
+QTabBar QToolButton::right-arrow {
+    background-color:rgb(132, 171, 208);border-width: 0;
+    background-image: url(:/images/tab/rightbtn.png);}
+QTabBar QToolButton::right-arrow:hover {background-color:rgb(132, 171, 208);border-width: 0;
+                                        background-image: url(:/images/tab/hoverrightbtn.png);}
+QTabBar QToolButton::right-arrow:disabled {
+                                        background-color:rgb(132, 171, 208);
+                                        border-width: 0;
+                                        background-image: url(:/images/tab/grayrightbtn.png);
+                                    }
+QTabBar QToolButton::left-arrow {
+                                 background-color:rgb(132, 171, 208);
+                                 border-width: 0;
+                                 background-image: url(:/images/tab/leftbtn.png);
+                             }\
+QTabBar QToolButton::left-arrow:hover {\
+                                       background-color:rgb(132, 171, 208);\
+                                       border-width: 0;\
+                                       background-image: url(:/images/tab/hoverleftbtn.png);\
+                                   }\
+QTabBar QToolButton::left-arrow:disabled {\
+                                       background-color:rgb(132, 171, 208);\
+                                       border-width: 0;\
+                                       background-image: url(:/images/tab/grayleftbtn.png);\
+                                   }\
+QTabBar::tab:first:selected {\
+                             margin-left: 30; margin-right: 0;\
+                             color: white;\
+                                 border-image: url(:/images/tab/sel3.png);\
+                             }\
+QTabBar::tab:first:!selected {\
+                              color: black;\
+                                  margin-left: 30; margin-right: 0;\
+                                  border-image: url(:/images/tab/normal3.png);\
+                              }\
+QTabBar::tab:first:hover:!selected {\
+                                    color: black;\
+                                        margin-left: 30; margin-right: 0;\
+                                        border-image: url(:/images/tab/hover3.png);\
+                                    }\
+QTabBar::tab:middle:selected {\
+                              margin-top: 0; margin-left: -15; margin-right: 8;\
+                              color: white;\
+                                  border-image: url(:/images/tab/sel3.png);\
+                              }\
+QTabBar::tab:middle:!selected {\
+                               color: black;\
+                                   margin-top: 0; margin-left: -15; margin-right: 8;\
+                                   border-image: url(:/images/tab/normal3.png);\
+                               }\
+QTabBar::tab:middle:hover:!selected {\
+                                     color: black;\
+                                         margin-top: 0; margin-left: -15; margin-right: 8;\
+                                         border-image: url(:/images/tab/hover3.png);\
+                                     }\
+QTabBar::tab:last:selected {\
+                            margin-top: 0px; margin-left: 0; margin-right: 0;\
+                            color: white;\
+                                border-image: url();\
+                            }\
+QTabBar::tab:last:!selected {\
+                             color: black;\
+                                 margin-top: 0; margin-left: 0; margin-right: 0;\
+                                 border-image: url();\
+                             }\
+QTabBar::tab:last:hover:!selected {\
+                                   color: black;\
+                                       margin-top: 0; margin-left: 0; margin-right: 0;\
+                                       border-image: url();\
+                                   }\
+QTabBar::tab:only-one {\
+                       margin: 0;\
+                       }
+
+/*按钮*/
+QPushButton
+{
+    background: rgb(76,131,215);
+    color: rgb(255, 255, 255);
+    width: 75px;
+    height: 25px;
+    border-radius:4px;
+}
+QPushButton:hover
+{
+    background:#1a9b81;
+    color: rgb(220, 220, 220);
+    width: 75px;
+    height: 25px;
+    border-radius:4px;
+}
+
+/*工具按钮*/
+QToolButton{
+   min-width:80px;
+   min-height:32px;
+}
+QToolButton{
+color:rgb(255, 255, 255);
+min-height:20;
+border-style:solid;
+border-top-left-radius:2px;
+border-top-right-radius:2px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgb(226,236,241), 
+                            stop: 0.3 rgb(160,160,160),
+                              stop: 1 rgb(140,140,140));
+border:1px;
+border-radius:5px;padding:2px 4px;/*border-radius控制圆角大小*/
+}
+QToolButton:hover{  /*鼠标放上后*/
+color:rgb(255, 255, 255);
+min-height:20;
+border-style:solid;
+border-top-left-radius:2px;
+border-top-right-radius:2px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgb(226,236,241), 
+                            stop: 0.3 rgb(160,160,160),
+                              stop: 1 rgb(120,120,120));
+border:1px;
+border-radius:5px;padding:2px 4px;
+}
+QToolButton:pressed{ /*按下按钮后*/
+color:rgb(255, 255, 255);
+min-height:20;
+border-style:solid;
+border-top-left-radius:2px;
+border-top-right-radius:2px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgb(226,236,241), 
+                            stop: 0.3 rgb(190,190,190),
+                              stop: 1 rgb(160,160,160));
+border:1px;
+border-radius:5px;padding:2px 4px;
+}
+QToolButton:checked{    /*选中后*/
+color:rgb(255, 255, 255);
+min-height:20;
+border-style:solid;
+border-top-left-radius:2px;
+border-top-right-radius:2px;
+background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgb(226,236,241), 
+                            stop: 0.3 rgb(190,190,190),
+                              stop: 1 rgb(160,160,160));
+border:1px;
+border-radius:5px;padding:2px 4px;
+}

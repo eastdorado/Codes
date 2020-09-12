@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SmartGo</class>
+ <widget class="QWidget" name="SmartGo">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>744</width>
+    <height>569</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>快速启动</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normalon>C:/Users/big/.designer/backup/res/go.jpg</normalon>
+   </iconset>
+  </property>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>111</width>
+     <height>321</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="vl_main"/>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>20</y>
+     <width>111</width>
+     <height>331</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="hl_main"/>
+  </widget>
+  <widget class="QGroupBox" name="gb_apps">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>240</y>
+     <width>261</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>20</y>
+      <width>160</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="hl_apps">
+     <item>
+      <widget class="QPushButton" name="pb_app_1">
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>40</y>
+     <width>160</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gl_groups">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pb_order_1">
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pb_order_1</sender>
+   <signal>clicked()</signal>
+   <receiver>SmartGo</receiver>
+   <slot>slot1()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>449</x>
+     <y>169</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>578</x>
+     <y>179</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pb_app_1</sender>
+   <signal>clicked()</signal>
+   <receiver>SmartGo</receiver>
+   <slot>slot2()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>464</x>
+     <y>350</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>483</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot1()</slot>
+  <slot>slot2()</slot>
+  <slot>slot3()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>818</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Word文档处理</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <activeon>C:/Users/big/.designer/backup/res/images/watermark.jpg</activeon>
+   </iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pb_add_files">
+        <property name="text">
+         <string>添加文件</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_open_dir">
+        <property name="text">
+         <string>添加文件夹</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_src_dir">
+        <property name="toolTip">
+         <string extracomment="指定输出文件"/>
+        </property>
+        <property name="statusTip">
+         <string extracomment="指定输出文件的路径和名称"/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_clear">
+        <property name="text">
+         <string>清空</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="cb_select_all">
+        <property name="text">
+         <string>全选</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTableWidget" name="tableWidget">
+      <column>
+       <property name="text">
+        <string>名称</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>总页数</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>输出范围</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>大小</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>最终修改日期</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>状态</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>操作</string>
+       </property>
+      </column>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>输出路径：</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox">
+        <property name="currentText">
+         <string>自定义目录</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>自定义目录</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>源文件目录</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>云目录</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_save_path"/>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pb_save_path">
+        <property name="toolTip">
+         <string extracomment="da"/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset>
+          <selectedoff>res/images/cross_1.png</selectedoff>
+          <selectedon>res/images/cross.png</selectedon>
+         </iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>源文件处理：</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_eyebrow">
+          <property name="text">
+           <string>去眉页和眉脚</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_watermark">
+          <property name="text">
+           <string>去水印</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>排序方式：</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rb_digit_little">
+          <property name="text">
+           <string>123 …</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rb_digit_big">
+          <property name="text">
+           <string>一二三 …</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pb_merge">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Adobe Devanagari</family>
+            <pointsize>12</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>合并</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>合并完成后：</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_open_dst_file">
+          <property name="text">
+           <string>打开输出文件</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_open_dst_dir">
+          <property name="text">
+           <string>打开输出文件夹</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_delete_src_files">
+          <property name="text">
+           <string>删除源文件</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cb_exit">
+          <property name="text">
+           <string>退出程序</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>      总进度：</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QProgressBar" name="progressBar">
+          <property name="value">
+           <number>0</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>818</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>功能</string>
+    </property>
+    <addaction name="action_4"/>
+    <addaction name="action_5"/>
+    <addaction name="action_3"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>帮助</string>
+    </property>
+    <addaction name="action"/>
+    <addaction name="action_2"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action">
+   <property name="text">
+    <string>语言</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>关于</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>设置</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>文件改名</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>转为PDF</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>slot_pb_clicked()</slot>
+  <slot>slot_bx_clicked()</slot>
+  <slot>slot_le_edited()</slot>
+ </slots>
+</ui>

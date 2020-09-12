@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>890</width>
+    <height>595</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>批量修改文件名</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>res/1.gif</normaloff>res/1.gif</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hl_tools">
+     <item>
+      <widget class="QPushButton" name="pushButton_src">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>打开源文件夹</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_flush">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>更新</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_dec">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>指定保存文件夹</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_go">
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <family>Gadugi</family>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Go</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="checkBox">
+       <property name="text">
+        <string>覆盖</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label_path_src">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>源文件路径：</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_path_dec">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>保存路径：</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hl_edits">
+     <item>
+      <widget class="QLineEdit" name="lineEdit_mask">
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="placeholderText">
+        <string extracomment="替换前的文字"/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_fake">
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>30</height>
+        </size>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="placeholderText">
+        <string extracomment="替换后的文字"/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hl_lists">
+     <item>
+      <widget class="QListWidget" name="listWidget_src_files"/>
+     </item>
+     <item>
+      <widget class="QListWidget" name="listWidget_dec_files"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_src</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>85</x>
+     <y>74</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_dec</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>366</x>
+     <y>36</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>342</x>
+     <y>93</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_covered()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>500</x>
+     <y>32</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>670</x>
+     <y>67</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_go</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>447</x>
+     <y>39</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_mask</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>Form</receiver>
+   <slot>slot_text_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>250</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>279</x>
+     <y>208</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_fake</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>Form</receiver>
+   <slot>slot_text_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>440</x>
+     <y>250</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>202</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_flush</sender>
+   <signal>clicked()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>162</x>
+     <y>21</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>184</x>
+     <y>115</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot_clicked()</slot>
+  <slot>slot_covered()</slot>
+  <slot>slot_text_changed()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Model</class>
+ <widget class="QDialog" name="Model">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>350</width>
+    <height>467</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hl_model">
+     <item>
+      <widget class="QToolButton" name="toolButton_model">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_model">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineEdit_model"/>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listWidget_model">
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>toolButton_model</sender>
+   <signal>clicked()</signal>
+   <receiver>Model</receiver>
+   <slot>slot_tmp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>130</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>66</x>
+     <y>97</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_model</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>Model</receiver>
+   <slot>slot_tmp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>304</x>
+     <y>61</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>51</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget_model</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>Model</receiver>
+   <slot>slot_tmp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>233</x>
+     <y>262</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>369</x>
+     <y>318</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot_tools_clicked()</slot>
+  <slot>slot_keyword_changed()</slot>
+  <slot>slot_model_clicked()</slot>
+  <slot>slot_tmp()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>414</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QListWidget" name="listWidget">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>50</y>
+     <width>256</width>
+     <height>192</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>280</y>
+     <width>113</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>280</y>
+     <width>104</width>
+     <height>71</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>150</y>
+     <width>71</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>CheckBox</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>lineEdit</sender>
+   <signal>editingFinished()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_edit_finish()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>146</x>
+     <y>293</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>72</x>
+     <y>328</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>textEdit</sender>
+   <signal>textChanged()</signal>
+   <receiver>Form</receiver>
+   <slot>slot_changed()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>330</x>
+     <y>306</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>listWidget</sender>
+   <signal>clicked(QModelIndex)</signal>
+   <receiver>Form</receiver>
+   <slot>slot_list_click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>254</x>
+     <y>126</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>391</x>
+     <y>137</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>Form</receiver>
+   <slot>slot_checked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>370</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>428</x>
+     <y>199</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot1()</slot>
+  <slot>slot2()</slot>
+  <slot>slot_edit_finish()</slot>
+  <slot>slot_list_click()</slot>
+  <slot>slot_changed()</slot>
+  <slot>slot_checked()</slot>
+ </slots>
+</ui>

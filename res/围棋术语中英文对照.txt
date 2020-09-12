@@ -1,0 +1,838 @@
+ 当前的英文围棋术语大部分是从日语来的，有一些日语的音译在里面。我国已有人考虑将围棋的属于纯英文化，这样更容易进行围棋国际化推广。
+    以下列出当前的围棋中英文术语对照表。基于此，以后可以作文围棋国际化推广的一个基础。
+
+      
+围棋术语中英文对照 发表时间：2012-07-06 16:33:10 [查看原文]
+
+段位dan grading
+
+级kyu
+
+读秒byo-yomi
+
+欺招hamete（trick play）
+
+厚thickness
+
+气liberty
+
+轻karui（light）
+
+失着slip
+
+本手honte（proper move）
+
+对杀semeai
+
+好手tesuji
+
+后手gote
+
+劫ko
+
+缓气劫yose-ko（approach-move-ko）
+
+筋suji
+
+双活seki（impasse）
+
+脱先kenuki
+
+无忧劫hanami-ko
+
+交换furikawari（exchange）
+
+味道aji（potential）
+
+先手得利kikashi
+
+眼eye
+
+星小目布局hoshi-komoku fuseki
+
+一间夹ikken bsasme
+
+手筋tesuji
+
+见合miai
+
+大模样作战big moyo ，large moyo
+
+生死劫tsume-ko
+
+劫材kozai
+
+先手sente
+
+定式formalized series of moves
+
+围contain
+
+拆extend
+
+立sagari
+
+叫吃atari（cheok）
+
+打入uehikomi
+
+挂角kakari
+
+逼tsume（checking extension）
+
+夹hasami（pincer）
+
+枷geta
+
+尖diagonal move
+
+空chi ，territory
+
+长nobi
+
+切断cut-in
+
+腾挪sabaki
+
+提通ponnuki
+
+挖warikom（wedge）
+
+压kake（pressing move），oshi（push）
+
+挤去眼sashikomi
+
+断点cutting point
+
+空提ponnuki
+
+断cut
+
+靠tsuke
+
+跳jump
+
+挡osae
+
+打atari
+
+提子take
+
+托角touke（corner）
+
+围棋术语翻译
+
+头衔及组织
+
+名人Meijin
+
+本因坊Honinbo
+
+王座 oza
+
+棋院 ki-in（GO institute）
+
+各誉本因坊 Houourable Honinbo
+
+关西棋院 kansai ki-ni（kansai GO Institute）
+
+　
+
+一般用语
+
+围棋运动员 goer;
+weiqi player
+
+段位 dan grading
+
+级 kyu
+
+比赛 shiai
+
+擂台赛 knockout tournament
+
+快棋 Haya-go（fast game）
+
+大手合 oteai
+
+　
+
+　
+
+基本术语
+
+读秒
+byo-yomi
+
+欺招
+hamete（trick play）
+
+厚
+thickness
+
+气
+liberty
+
+轻karui
+（light）
+
+失着
+slip
+
+本手honte
+（proper move）
+
+对杀
+semeai
+
+好手
+tesuji
+
+后手
+gote
+
+劫
+ko
+
+缓气劫yose-ko
+（approach-move-ko）
+
+筋
+suji
+
+双活seki
+（impasse）
+
+脱先
+kenuki
+
+无忧劫
+hanami-ko
+
+交换
+furikawari（exchange）
+
+手割
+tewari
+
+味道aji
+（potential）
+
+先手得利
+kikashi
+
+眼
+eye
+
+星小目布局
+hoshi-komoku fuseki
+
+走次序
+sequence
+
+一间夹
+ikken bsasme
+
+手筋
+tesuji
+
+见合
+miai
+
+大模样作战
+big moyo ; large moyo
+
+生死劫
+tsume-ko
+
+点来
+nakade
+
+劫材
+kozai
+
+先手
+sente
+
+定式
+formalized series of moves
+
+　
+
+　
+
+　
+
+围棋英语专业术语
+l-go/the game of go 围棋
+adjourn  封盘　　　　　　
+byo-yomi   读秒
+dan grading 段位　　　　　
+handicap  让子
+liberty   气　　　　　　　
+kyu  级
+komi   贴目　　　　　　　
+match   比赛、挑战
+moyo   目　　　　　　　　
+resign   认输
+shiai   比赛　　　　　　　
+Stone   棋子
+头衔及组织 
+名誉本因坊 Honourable Honinbo
+本因坊 Honinbo 
+名人 Meijin  
+王座 oza  
+天元 Tengen(Chunwon)  
+棋圣 Kisei 
+小棋圣 Gosei 
+十段 Judan  
+新人王 Shinjin-O 
+王冠 Okan 
+JT杯 JT Cup 
+新锐 Shin Ei 
+新锐 Shin Ei 
+NHK杯 NHK Cup 
+NEC 杯 NEC Cup 
+东京杯 Tokyo Cup(hayago senshuken) 
+日本棋院 Nihon ki-in（GO institute） 
+关西棋院 kansai ki-in（kansai GO Institute） 
+一般用语
+围棋运动员 goer; weiqi player 
+段位 dan grading 
+级 kyu 
+比赛 shiai 
+擂台赛 knockout tournament 
+快棋 Haya-go（fast game） 
+大手合 oteai 　 
+基本术语  
+读秒 byo-yomi
+欺招 hamete（trick play）
+厚 thickness 
+气 liberty 
+轻 karui（light） 
+失着 slip 
+本手 honte（proper move） 
+对杀 semeai 
+好手 tesuji
+后手 gote 
+劫 ko 
+缓气劫 yose-ko（approach-move-ko） 
+筋 suji 
+双活 seki（impasse） 
+脱先 kenuki 
+无忧劫 hanami-ko
+交换 furikawari（exchange） 
+手割 tewari 
+味道 aji（potential）
+先手得利 kikashi 
+眼 eye 
+星小目布局 hoshi-komoku fuseki
+走次序 sequence 
+一间夹 ikken bsasme 
+手筋 tesuji 
+见合 miai
+大模样作战 big moyo ; large moyo 
+
+ 
+
+生死劫 tsume-ko
+眼形 nakade 
+劫材 kozai 
+先手 sente 
+定式 formalized series of moves 　 　 
+动词
+围 contain
+拆（与本方子隔开） extend
+立 sagari 
+叫吃 atari（cheok） 
+打入 uehikomi 
+挂角 kakari 
+逼 tsume（checking extension）
+夹 hasami（pincer）
+枷 geta 
+尖 diagonal move 
+空 chi ; territory
+长（贴本方子） nobi
+切断 cut-in
+腾挪 sabaki 
+提通 ponnuki 
+挖 warikom（wedge） 
+压 kake（pressing move）; oshi（push）
+挤去眼 sashikomi
+断点 cutting point 
+空提 ponnuki 
+断 cut 
+靠 tsuke 
+跳 jump
+挡 osae 
+打 atari 
+提子 take
+托角 touke（corner）
+
+
+围棋术语中英文对照
+　　3-3 point 三三
+
+　　3-4 point 小目
+
+　　3-5 point 目外
+
+　　4-6 point 超高目
+
+　　5-4 point 高目
+
+　　5-5 point 五五
+
+　　aji 味道
+
+　　akisankaku 空三角
+
+　　all-dominating ko 生死劫
+
+　　amateur 业余
+
+　　approach move 紧气
+
+　　approach-move-ko 缓气劫
+
+　　atari 打
+
+　　attach 靠
+
+　　attack 攻
+
+　　avalanche 雪崩
+
+　　bad move 恶手
+
+　　bamboo joint 双
+
+　　bend 拐
+
+　　bent four 曲四
+
+　　bent four in the corner 盘角曲四
+
+　　bent three 曲三
+
+　　big moyo; large moyo 大模样作战
+
+　　big point 大场
+
+　　blind spot 盲点
+
+　　block 挡
+
+　　bluky five 刀把五
+
+　　bridge under 渡
+
+　　bump 顶
+
+　　byo-yomi 读秒
+
+　　capping play 镇
+
+　　capture 吃
+
+　　capture three recapture one 打三还一
+
+　　capture two recapture one 打二还一
+
+　　capturing race 对杀
+
+　　carpenter"s square 金柜角
+
+　　chain 整体
+
+　　checking extension 逼
+
+　　chi; territory 空
+
+　　Chinese Fuseki 中国流
+
+　　clamp 夹
+
+　　close game 细棋
+
+　　connect 连
+
+　　connect and die 接不归
+
+　　corner approach 挂角
+
+　　corner enclosure 收角
+
+　　crane"s nest 乌龟不出头
+
+　　crawl 爬
+
+　　cross cut 扭断
+
+　　crossed five 花五
+
+　　crude move 俗手
+
+　　cut-in 切断
+
+　　cutting point 断点
+
+　　dan grading 段位
+
+　　defend 防
+
+　　descent 立
+
+　　diagonal 尖
+
+　　double atari 双吃
+
+　　double hane 连扳
+
+　　double shortage of liberties 金鸡独立
+
+　　dragon 龙
+
+　　elephant"s move 象步
+
+　　endgame 官子
+
+　　eternal life 长生
+
+　　even game 分先
+
+　　exchange 交换
+
+　　extend 拆
+
+　　external liberty 外气
+
+　　eye 眼
+
+　　failure 失败
+
+　　false eye 假眼
+
+　　farmer"s hat 丁四
+
+　　fast game 快棋
+
+　　flexibility 弹性
+
+　　floating stones 浮子
+
+　　focal point 天王山
+
+　　formalized series of moves 定式
+
+　　furikawari 交换
+
+　　geta 枷
+
+　　go 围棋
+
+　　go board 棋盘
+
+　　GO institute 棋院
+
+　　go ren sei 五连星
+
+　　go theory 棋理
+
+　　goer; weiqi player 围棋运动员
+
+　　gote 后手
+
+　　guessing the stones 猜子
+
+　　hamete 欺着
+
+　　hanami-ko 无忧劫
+
+　　handicap 让子
+
+　　handicap game 让子棋
+
+　　hasami 夹
+
+　　hasty move 随手
+
+　　Haya-go 快棋
+
+　　Honinbo 本因坊
+
+　　honte 本手
+
+　　hoshi-komoku fuseki 星小目布局
+
+　　Houourable Honinbo 名誉本因坊
+
+　　ikken bsasme 一间夹
+
+　　impasse 共活
+
+　　influence 厚势
+
+　　ing"s 应氏
+
+　　insei 院生
+
+　　internal liberty 内气
+
+　　invasion 打入
+
+　　j group 大猪嘴
+
+　　joseki 定式
+
+　　jump 跳
+
+　　kakari 挂角
+
+　　kake; oshi 压
+
+　　kansai ki-ni 关西棋院
+
+　　karui 轻
+
+　　kikashi 先手得利
+
+　　ki-ni 棋院
+
+　　knight"s move 飞
+
+　　knockout tournament 擂台赛
+
+　　ko 劫
+
+　　ko threat 劫材
+
+　　komi 贴目
+
+　　kozai 劫材
+
+　　kyu 级
+
+　　ladder 征
+
+　　ladder block 引征
+
+　　large knight"s move 大飞
+
+　　large monkey jump 大伸腿
+
+　　liberty 气
+
+　　life and death 死活
+
+　　light 轻
+
+　　living group 活棋
+
+　　local ko threat 本身劫
+
+　　loose ladder 缓征
+
+　　lose 负
+
+　　lose by time 超时
+
+　　losing move 败着
+
+　　Meijin 名人
+
+　　miai 见合
+
+　　middle game 中盘
+
+　　mirror go 东坡棋
+
+　　monkey jump 伸腿
+
+　　nakade 点来
+
+　　net 枷
+
+　　neutral point 单官
+
+　　ni ren sei 二连星
+
+　　nobi 长(贴本方子)
+
+　　opening 布局
+
+　　osae 挡
+
+　　Oteai 大手合
+
+　　overplay 无理
+
+　　Oza 王座
+
+　　pass 虚手
+
+　　peep 刺
+
+　　pincer 夹
+
+　　placement 点
+
+　　point 目
+
+　　ponnuki 空提
+
+　　ponnuki 提通
+
+　　positional judgement 形势判断
+
+　　potential 味道
+
+　　press 压
+
+　　probe 试应手
+
+　　proessional 职业
+
+　　proper move 本手
+
+　　pull back 退
+
+　　push through 冲
+
+　　rabbity six 花六
+
+　　real eye 真眼
+
+　　rectangular six in the corner 盘角板六
+
+　　reference 参考
+
+　　resign 认输
+
+　　revere sente 逆先
+
+　　sabaki 腾挪
+
+　　sagari 立
+
+　　san ren sei 三连星
+
+　　sashikomi 挤去眼
+
+　　seki 双活
+
+　　semeai 对杀
+
+　　sente 先手得利
+
+　　sequence 走次序
+
+　　settle 定型
+
+　　shape 形状
+
+　　shared liberty 公气
+
+　　shiai 比赛
+
+　　shortage of liberties 气紧
+
+　　shoulder hit 尖冲
+
+　　side 边
+
+　　situation 形势
+
+　　slip 失着
+
+　　small monkey jump 小伸腿
+
+　　snapback 倒扑
+
+　　square four 方四
+
+　　squeezing tesuji 滚包
+
+　　star point 星位
+
+　　stone 棋子
+
+　　straight four 直四
+
+　　straight three 直三
+
+　　straight two 直二
+
+　　stretch 并
+
+　　strong 强
+
+　　success 成功
+
+　　suji 筋
+
+　　surround 围住
+
+　　take 提子
+
+　　take back 悔棋
+
+　　teaching game 指导棋
+
+　　ten thousand year ko 万年劫
+
+　　tengen 天元
+
+　　tenuki 脱先
+
+　　territory 地
+
+　　tesuji 好手
+
+　　tesuji 手筋
+
+　　tewari 手割
+
+　　thickness 厚
+
+　　thin 薄
+
+　　throw in 扑
+
+　　tiger"s mouth 虎
+
+　　touke ( corner) 托角
+
+　　trick play 欺着
+
+　　triple ko 三劫循环
+
+　　tripod group 小猪嘴
+
+　　tsuke 靠
+
+　　tsume-ko 生死劫
+
+　　two-stone edge squeeze 大头鬼
+
+　　uehikomi 打入
+
+　　under the stones 倒脱靴
+
+　　variation 变化
+
+　　vital point 急所
+
+　　wall 墙
+
+　　warikom 挖
+
+　　wariuchi 分投
+
+　　weak 弱
+
+　　wedge 挖
+
+　　win 胜
+　　winning move 胜着
+　　yose-ko 缓气劫

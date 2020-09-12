@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout"/>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="action_new"/>
+    <addaction name="action_open"/>
+    <addaction name="action_save"/>
+    <addaction name="action_save_as"/>
+    <addaction name="separator"/>
+    <addaction name="action_exit"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>功能</string>
+    </property>
+    <addaction name="action_split_pdf"/>
+   </widget>
+   <addaction name="menu"/>
+   <addaction name="menu_2"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_new"/>
+   <addaction name="action_open"/>
+   <addaction name="action_save"/>
+   <addaction name="action_save_as"/>
+   <addaction name="separator"/>
+   <addaction name="action_split_pdf"/>
+   <addaction name="separator"/>
+   <addaction name="action_exit"/>
+  </widget>
+  <action name="action_new">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/new doc.gif</normaloff>res/images/new doc.gif</iconset>
+   </property>
+   <property name="text">
+    <string>新建</string>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/open.gif</normaloff>res/images/open.gif</iconset>
+   </property>
+   <property name="text">
+    <string>打开</string>
+   </property>
+  </action>
+  <action name="action_save">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/save.gif</normaloff>res/images/save.gif</iconset>
+   </property>
+   <property name="text">
+    <string>保存</string>
+   </property>
+  </action>
+  <action name="action_save_as">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/save as.gif</normaloff>res/images/save as.gif</iconset>
+   </property>
+   <property name="text">
+    <string>另存为</string>
+   </property>
+  </action>
+  <action name="action_exit">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/close.gif</normaloff>res/images/close.gif</iconset>
+   </property>
+   <property name="text">
+    <string>退出</string>
+   </property>
+  </action>
+  <action name="action_split_pdf">
+   <property name="icon">
+    <iconset>
+     <normaloff>res/images/split pdf.gif</normaloff>res/images/split pdf.gif</iconset>
+   </property>
+   <property name="text">
+    <string>PDF分隔</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>toolBar</sender>
+   <signal>actionTriggered(QAction*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>slot_tools_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>428</x>
+     <y>40</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>352</x>
+     <y>79</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot_tools_clicked()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Card</class>
+ <widget class="QDialog" name="Card">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>602</width>
+    <height>423</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="hl_title">
+     <item>
+      <widget class="QToolButton" name="toolButton_title_exit">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_title">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QToolButton" name="toolButton_title_save">
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listWidget">
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="dragEnabled">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>toolButton_title_exit</sender>
+   <signal>clicked()</signal>
+   <receiver>Card</receiver>
+   <slot>slot_tmp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>46</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>60</x>
+     <y>167</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_title_save</sender>
+   <signal>clicked()</signal>
+   <receiver>Card</receiver>
+   <slot>slot_save()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>195</x>
+     <y>28</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>437</x>
+     <y>203</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>slot_save()</slot>
+  <slot>slot_animation()</slot>
+  <slot>slot_tmp()</slot>
+ </slots>
+</ui>

@@ -1,0 +1,8 @@
+接触QT都挺多年了，今天开始打算把这几年攒下的QT资源记录下来，留个存档吧。今天记录的是windows下（只有win vista|win7支持）的
+玻璃磨砂效果封装处理，
+封装类中使用到三个系统函数DwmIsCompositionEnabled、DwmEnableBlurBehindWindow、DwmExtendFrameIntoClientArea，这三个系统函数度娘都有很多说明【可以参考这里】，我这里简单说下：
+
+DwmIsCompositionEnabled：判断是否兼容DWM模式，返回TRUE，表示支持玻璃磨砂效果，否则为不支持；
+DwmEnableBlurBehindWindow：开启或关闭指定区域的玻璃磨砂效果；
+DwmExtendFrameIntoClientArea：窗口边框向客户区扩展的玻璃磨砂效果；
+封装类中使用动态加载方式来引用这3个系统库Dwmapi.dll，因为使用这个封装类的程序可能要跑在XP系统中，而XP中是没有Dwmapi.dll这个系统库的。

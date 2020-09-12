@@ -1,0 +1,67 @@
+/*   list_table.qss   */
+
+/*QListWidget*/
+QListWidget
+{
+    border:1px solid gray;   /*边界线:宽度、颜色*/
+    /*background:gray;*/    /*表格背景色*/
+    color:black;        /*前景色：文字颜色*/
+    /*margin:5px,5px,0px,50px;*/   /*上、下、左、右，间距*/
+}
+
+/*
+QListWidget::item
+{
+    padding-top:24px;
+    padding-bottom:4px;
+}
+*/
+
+QListWidget::item:hover
+{
+    show-decoration-selected:5;
+    background:skyblue;
+}
+
+QListWidget::item:selected
+{
+    /*border:0px;*/
+    background:lightgreen; /*lightgray;*/
+    padding:0px;
+    margin:0px;
+    color:red;
+}
+
+/*上次选择后保留的状态，鼠标离开后显示*/
+QListWidget::item:selected:!active
+{
+    border-width:0px;
+    background:lightgreen;
+}
+
+
+/*QTableWidget*/
+QTableWidget
+{
+    color:green;    /*前景色：文字颜色*/
+    /*gridline-color:red;   */     /*表格中的网格线条颜色*/
+    background:white;
+    /*设置交替颜色，需要在函数属性中设置:tableWidget->setAlternatingRowColors(true)*/
+    /*alternate-background-color:red;   */
+    selection-color:red;    /*鼠标选中时前景色：文字颜色*/
+    selection-background-color:lightgray;   /*鼠标选中时背景色*/
+    border:1px solid gray;  /*边框线的宽度、颜色*/
+    /*border:none;*/    /*去除边界线*/
+    /*border-radius:5px;*/
+    /*padding:10px 10px;*/  /*表格与边框的间距*/
+}
+
+/*设置表头属性*/
+QTableWidget QHeaderView::section
+{
+    background-color:#F0F0F0;  /*lightgray*/
+    /*color:black;*/
+    /*padding-left:4px;*/
+    /*border:3px solid red;*/   /*表头边框线的宽度、颜色*/
+    /*border:1px solid gray;*/
+}
