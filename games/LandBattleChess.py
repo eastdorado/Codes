@@ -6,8 +6,7 @@ import random
 import os
 from functools import partial
 from PyQt5 import QtWidgets, QtGui, QtCore
-from utilities import Utils, MyLog
-from Logging import Logger
+from utilities import Utils, MyLog, BitMark, BitSet
 
 
 class Chess(QtWidgets.QFrame):
@@ -315,9 +314,12 @@ class LandBattleChess(QtWidgets.QWidget):
         self.dark_room = None  # 暗牌坐标列表
         self.bastion = ['红雷', '红雷', '红雷', '红旗', '蓝雷', '蓝雷', '蓝雷', '蓝旗']  # 双方的堡垒
         self.lot = 0  # 手数
-        self.me_first = False  # 玩家先手
-        self.me = 0  # 玩家阵营  0是红方,1是蓝方
-        self.acting = False  # 还没开局
+        self.setting = BitMark(16)  # 设置区的属性标志位
+        self.enemies = [[], []]  # 可攻击的敌手棋子集合，击杀或同归于尽
+        # self.base_camp = False
+        # self.me = 0  # 玩家阵营  0是红方,1是蓝方
+        # self.acting = False  # 还没开局
+
         self.tmp = None  # 临时位置，按下时画临时的蓝框用
         self.cur = None  # 选中的棋子位置，蓝框用
         self.move_start = None  # 移动的开始位置
@@ -333,8 +335,8 @@ class LandBattleChess(QtWidgets.QWidget):
         # 缺省1:铁路兵站32个，一步多站 2:公路兵站14个，一步一站
         # 3:行营10个 4:大本营4个 0:界外无效
 
-        # 32个铁路兵站，默认都是 1
-        # 14个公路兵站
+        # 32个铁路兵站，默认都是 1  Railway station
+        # 14个公路兵站  depot  Highway station
         self.board[0][0] = 2
         self.board[0][2] = 2
         self.board[0][4] = 2
@@ -349,7 +351,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[11][0] = 2
         self.board[11][2] = 2
         self.board[11][4] = 2
-        # 10个行营
+        # 10个行营 Line camp
         self.board[2][1] = 3
         self.board[2][3] = 3
         self.board[3][2] = 3
@@ -360,13 +362,19 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[8][2] = 3
         self.board[9][1] = 3
         self.board[9][3] = 3
-        # 4个大本营
+        # 4个大本营 base camp
         self.board[0][1] = 4
         self.board[0][3] = 4
         self.board[11][1] = 4
         self.board[11][3] = 4
         # self.log.debug(self.board)
         # endregion
+
+        self.setting[0] = 1  # 玩家先手，0 ai先手   me_first = False
+        self.setting[1] = 1  # 大本营不吃子  base_camp = False
+
+        self.setting[2] = 1  # 玩家阵营  0是红方,1是蓝方
+        self.setting[3] = 0  # 已经开局
 
         self.replay()
 
@@ -750,7 +758,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.tmp = None
         self.cur = None
 
-        if self.acting:  # 需要清理棋子控件
+        if self.setting[3]:  # 需要清理棋子控件
             return
             # for row in range(12):
             #     for col in range(5):
@@ -805,9 +813,9 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # region 开始游戏
-        self.acting = True
+        self.setting[3] = True
 
-        if not self.me_first:  # 机器先手
+        if not self.setting[0]:  # 机器先手
             self._ai_open_chess()
             if self.move_end:
                 # print(self.move_end)
@@ -855,8 +863,75 @@ class LandBattleChess(QtWidgets.QWidget):
         else:
             ...
 
+    @staticmethod
+    def _valid_coord(coord=None):
+        # 坐标有效性判断
+        return True if coord and 0 <= coord[0] < 12 and 0 <= coord[1] < 5 else False
+
+    # 获得所有可抵达的敌人
+    def get_enemies(self, coord):
+        if not self._valid_coord(coord):
+            return None
+        row, col = coord
+
+        chess = self.composition[row][col]
+        ret = chess.get_info()
+        if ret[3] in ['地雷', '军旗']:  # 不能移动吃子的
+            return None
+
+        self.enemies[0].clear()
+        self.enemies[1].clear()
+
+        if self.board[row][col] in [2, 4]:  # 2: 公路兵站14个，一步一站  4:大本营4个
+            self._search_neighbour_near(row, col)
+
+        elif self.board[row][col] == 3:  # 3:行营10个
+            self._search_neighbour_near(row, col)
+
+            if self._valid_coord(row - 1, col - 1):
+                self._fight_neighbour(row, col, row - 1, col - 1)
+            if self._valid_coord(row - 1, col + 1):
+                self._fight_neighbour(row, col, row - 1, col + 1)
+            if self._valid_coord(row + 1, col - 1):
+                self._fight_neighbour(row, col, row + 1, col - 1)
+            if self._valid_coord(row + 1, col + 1):
+                self._fight_neighbour(row, col, row + 1, col + 1)
+
+        else:  # 缺省1: 铁路兵站32个，一步多站   0:界外无效
+            ...
+
+
+    def _search_neighbour_near(self, row, col):
+        if self._valid_coord(row, col - 1):
+            self._fight_neighbour(row, col, row, col - 1)
+        if self._valid_coord(row, col + 1):
+            self._fight_neighbour(row, col, row, col + 1)
+        if self._valid_coord(row - 1, col):
+            self._fight_neighbour(row, col, row - 1, col)
+        if self._valid_coord(row + 1, col):
+            self._fight_neighbour(row, col, row + 1, col)
+
+    def _fight_neighbour(self, row1, col1, row2, col2):
+        chess1 = self.composition[row1, col1]
+        chess2 = self.composition[row2, col2]
+
+        if not chess1 or not chess2:
+            return
+
+        ret1 = chess1.get_info()
+        ret2 = chess2.get_info()
+
+        if abs(ret1[0] - ret2[0]) < 12:  # 自己人
+            return
+
+        result = self._judge(ret1[0], ret2[0])
+        if result == 0:
+            self.enemies[1].append(chess2)
+        elif result > 0:
+            self.enemies[0].append(chess2)
+
     # 战斗裁判   =0：同归于尽  <0：失败  >0：胜利
-    def judge(self, id_attacker, id_defender):
+    def _judge(self, id_attacker, id_defender):
         ret = 0
         a = id_attacker % 12  # 进攻方
         d = id_defender % 12  # 防守方
@@ -939,3 +1014,16 @@ if __name__ == '__main__':
 
     # MyLog('test.log', 1).debug('haohao')
 
+    # b = BitSet(3)
+    # print("size=", b.size())
+    # print("binstr=", b, b.show())
+    # a = BitMark(8)
+    # a[2] = 1
+    # # a[12] = 1
+    #
+    # print(a)
+    # a[-3] = 1
+    # print(a)
+    # # a.set(-3)
+    # a.flip()
+    # print(a, len(a), a[-3], a[4])

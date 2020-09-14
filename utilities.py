@@ -23,9 +23,11 @@ import win32gui
 from win32com.client import constants, gencache, Dispatch, DispatchEx
 from PyPDF4 import PdfFileReader, PdfFileWriter
 
+import copy
 import docx
 import json
 import random
+import array
 import string
 import time
 import uuid
@@ -1638,6 +1640,358 @@ class AnimWin(QtWidgets.QWidget):
             # window = self.frameGeometry()  # 包括标题栏的高度和边框的宽度且要在显示之后调用才有效
             window.moveCenter(center)
             self.move(window.topLeft())
+
+
+class BitSet(object):
+    # from low to high "00000001 00000010 00000011", the array is [1, 2, 3]
+    def __init__(self, capacity):
+        # "B"类型相当于 C 语言的 unsigned char， 即占用1byte（8位），所以size大小设置为8
+        self.unit_size = 8
+        self.unit_count = (capacity + self.unit_size - 1) // self.unit_size
+        self.capacity = capacity
+        self.arr = array.array("B", [0] * self.unit_count)
+
+    def any(self):
+        # 是否存在置为 1 的位
+        for a in self.arr:
+            if a != 0:
+                return True
+        return False
+
+    def all(self):
+        # 是否所有位都为 1， 即是否存在置为 0 的位
+        t = (1 << self.unit_size) - 1
+        for a in self.arr:
+            if (a & t) != t:
+                return False
+        return True
+
+    def none(self):
+        # 是否所有位都为 0，即是否不存在置为 1 的位
+        for a in self.arr:
+            if a != 0:
+                return False
+        return True
+
+    def count(self):
+        # 置为 1 的位的个数
+        c = 0
+        for a in self.arr:
+            while a > 0:
+                if a & 1:
+                    c += 1
+                a = a >> 1
+        return c
+
+    def size(self, flag='bits'):
+        # 所有位的个数 or 所有字节数
+        return self.unit_count * self.unit_size if flag == 'bits' else self.unit_count
+
+    def get(self, pos):
+        # 获取第 pos 位的值
+        index = int(pos / self.unit_size)
+        offset = (self.unit_size - (pos - index * self.unit_size) - 1) % self.unit_size
+        return (self.arr[index] >> offset) & 1
+
+    def test(self, pos):
+        # 判断第 pos 位的值是否为 1
+        if self.get(pos):
+            return True
+        return False
+
+    def set(self, pos=-1):
+        # 设置第 pos 位的值为 1，若 pos 为 -1， 则所有位都置为 1
+        if pos >= 0:
+            index = int(pos / self.unit_size)
+            offset = (self.unit_size - (pos - index * self.unit_size) - 1) % self.unit_size
+            self.arr[index] = (self.arr[index]) | (1 << offset)
+        else:
+            t = (1 << self.unit_size) - 1
+            for i in range(self.unit_count):
+                self.arr[i] = self.arr[i] | t
+
+    def reset(self, pos=-1):
+        # 设置第 pos 位的值为 0，若 pos 为 -1， 则所有位都置为 0
+        if pos >= 0:
+            index = int(pos / self.unit_size)
+            offset = (self.unit_size - (pos - index * self.unit_size) - 1) % self.unit_size
+            x = (1 << offset)
+            self.arr[index] = (self.arr[index]) & (~x)
+        else:
+            for i in range(self.unit_count):
+                self.arr[i] = 0
+
+    def flip(self, pos=-1):
+        # 把第 pos 位的值取反，若 pos 为 -1， 则所有位都取反
+        if pos >= 0:
+            if self.get(pos):
+                self.reset(pos)
+            else:
+                self.set(pos)
+        else:
+            for i in range(self.unit_count):
+                self.arr[i] = ~self.arr[i] + (1 << self.unit_size)
+
+    def bin_str(self):
+        b = ""
+        for a in self.arr:
+            t = bin(a)
+            b += "0" * (self.unit_size - len(t) + 2) + t + ","
+        return "[" + b.replace("0b", "").strip(",") + "]"
+
+    def show(self):
+        return self.arr
+
+    def __repr__(self):
+        return self.bin_str()
+
+
+class Bits:
+    # This Is Base Class Of All Bits Operator Achieve
+    # Use Numpy DArray#
+    #
+    # Achieve Port Of Bit set In C++ Standard
+    # e.g. flip,set,reset,....
+    #
+    # Achieve L/Rshift Local
+    # And Xor Between Different Size Of Bits
+    TYPE_BITS_NUM = 8
+    TYPE_IN_USE = 'uint8'
+
+    def __init__(self, start=None, n_vail=None):
+
+        if start is None:
+            start = np.zeros(0, self.TYPE_IN_USE)
+
+        # Ini The start If It's Str Which Include only '0' And '1'
+        elif type(start) is str:
+            idx = len(start) - self.TYPE_BITS_NUM
+            n_vail = len(start)
+            idx2 = 0
+            tmp_start = np.zeros((len(start) + self.TYPE_BITS_NUM - 1) / self.TYPE_BITS_NUM, self.TYPE_IN_USE)
+
+            while idx > 0:
+                tmp_start[idx2] = int(start[idx:idx + self.TYPE_BITS_NUM], 2)
+                idx -= self.TYPE_BITS_NUM
+                idx2 += 1
+            tmp_start[idx2] = int(start[:idx + self.TYPE_BITS_NUM], 2)
+            start = tmp_start
+        self._status = copy.deepcopy(start)
+        # Ini The Valid Bits Num
+        # Set The High Mask
+        if n_vail is None:
+            self._len = start.size * self.TYPE_BITS_NUM
+        else:
+            self._len = n_vail
+            self._status.resize((n_vail + self.TYPE_BITS_NUM - 1) / self.TYPE_BITS_NUM)
+        self._mask = self._set_mask()
+
+    def _set_mask(self):
+        ret_mask = np.array(0xFF, self.TYPE_IN_USE)
+        per_mask = 1 << int(self._len % self.TYPE_BITS_NUM)
+        tmp_mask = np.array(per_mask - 1, self.TYPE_IN_USE)
+        if tmp_mask != 0:
+            ret_mask = tmp_mask
+        return ret_mask
+
+    def _get_block_num(self, n):
+        return n / self.TYPE_BITS_NUM
+
+    def _get_block_offset(self, n):
+        return n & (self.TYPE_BITS_NUM - 1)
+
+    def get_status(self):
+        return self._status
+
+    def any(self):
+        return self._status.any()
+
+    def none(self):
+        return ~(self.any())
+
+    def flip(self, pos=None):
+        if pos is None:
+            self._status = ~self._status
+        elif pos < self._len:
+            self._status[self._get_block_num(pos)] ^= (1 << (self._get_block_offset(pos)))
+
+    def set(self, pos=None):
+        setted_block = (1 << self.TYPE_BITS_NUM) - 1
+        if pos is None:
+            for idx in range(0, self._status.size):
+                self._status[idx] = setted_block
+        elif pos < self._len:
+            tmp_mask = (1 << (self._get_block_offset(pos)))
+            self._status[self._get_block_num(pos)] &= (~tmp_mask)
+            self._status[self._get_block_num(pos)] ^= tmp_mask
+
+    def reset(self, pos=None):
+        if pos is None:
+            self._status = np.zeros(self._status.size, self.TYPE_IN_USE)
+        elif pos < self._len:
+            tmp_mask = (1 << (self._get_block_offset(pos)))
+            self._status[self._get_block_num(pos)] &= (~tmp_mask)
+
+    def test(self, pos=0):
+        if self[pos] == 1:
+            return True
+        else:
+            return False
+
+    def resize(self, new_len):
+        if len <= 0:
+            self.__init__()
+        else:
+            sz = ((new_len + self.TYPE_BITS_NUM - 1) / self.TYPE_BITS_NUM)
+            self._len = new_len
+            self._status.resize(sz)
+            self._mask = self._set_mask()
+
+    def store_size(self):
+        return self._status.size
+
+    def __len__(self):
+        return self._len
+
+    def __getitem__(self, item):
+        return (self._status[self._get_block_num(item)] >> (self._get_block_offset(item))) & 1
+
+    def __setitem__(self, key, value):
+        assert (value == 0 or value == 1)
+        if value == 0:
+            self.reset(key)
+        else:
+            self.set(key)
+
+    def __rshift__(self, mov):
+        ret_bits = Bits()
+        ret_bits.resize(self._len)
+        mov = int(mov)
+
+        if mov >= self._len:
+            ret_bits.reset()
+        else:
+            sta = mov / self.TYPE_BITS_NUM
+            offset = mov % self.TYPE_BITS_NUM
+            j = 0
+
+            for idx in range(sta, (len(self._status) - 1)):
+                ret_bits._status[j] = ((self._status[idx]) >> offset) \
+                                      ^ (self._status[idx + 1] << (self.TYPE_BITS_NUM - offset))
+                j += 1
+            ret_bits._status[j] = (self._status[-1] & self._mask) >> offset
+
+        return ret_bits
+
+    def __lshift__(self, mov):
+        ret_bits = Bits()
+        ret_bits.resize(self._len)
+        mov = int(mov)
+
+        if mov >= self._len:
+            ret_bits.reset()
+        else:
+            sta = len(self._status) - 1 \
+                  - mov / self.TYPE_BITS_NUM
+
+            offset = mov % self.TYPE_BITS_NUM
+
+            j = len(self._status) - 1
+
+            for idx in reversed(range(sta, 0, -1)):
+                ret_bits._status[j] = ((self._status[idx]) << offset) \
+                                      ^ (self._status[idx - 1] >> (self.TYPE_BITS_NUM - offset))
+                j -= 1
+
+            ret_bits._status[j] = (self._status[0]) << offset
+
+        return ret_bits
+
+    def __xor__(self, other_bits):
+
+        if self._len >= len(other_bits):
+            ret_bits = Bits(self.get_status(), len(self))
+            oppo = other_bits
+        else:
+            ret_bits = Bits(other_bits.get_status(), len(other_bits))
+            oppo = self
+
+        for idx in range(oppo._status.size - 1):
+            ret_bits._status[idx] ^= oppo.get_status()[idx]
+
+        idx = oppo._status.size - 1
+        print(idx)
+        ret_bits._status[idx] ^= (oppo._status[idx] & oppo._mask)
+        return ret_bits
+
+
+# 位标志列表，简洁方便的
+class BitMark(object):
+    def __init__(self, length):
+        self.size = length // 8 + (1 if length % 8 else 0)  # 字节数
+        self.values = bytearray(b"\x00" * self.size)
+        self.length = length  # 要求的总位数
+
+    def __setitem__(self, index, value):
+        if self.length < 1:
+            return None
+
+        off = 7 - index % 8
+        value = int(bool(value)) << off  # 0000X0000
+        mask = (1 << off)  # 000010000
+
+        self.values[index // 8] &= (~mask)  # ----0----
+        self.values[index // 8] |= value
+
+        # value = int(bool(value)) << (7 - index % 8)
+        # mask = 0xff ^ (7 - index % 8)
+
+        # self.values[index // 8] &= mask
+        # self.values[index // 8] |= value
+
+    def __getitem__(self, index):
+        if self.length < 1:
+            return None
+
+        # 序号小于0，从尾倒数。大于总位数则异常
+        mask = 1 << (7 - index % 8)
+        # print(index, 7 - index % 8)
+        return bool(self.values[index // 8] & mask)
+
+    def __len__(self):
+        # 返回位长度，有效位数与总位数
+        return self.length
+
+    def __repr__(self):
+        if self.length < 1:
+            return '空'
+
+        # MyLog().debug(len(self), type(self))
+        return "<{}>".format(",".join("{:d}".format(value) for value in self))
+
+    def __str__(self):
+        if self.length < 1:
+            return '空'
+
+        res = []
+        for each in self.values:
+            value = "{:08b}".format(each)
+            res.append(f'{value[:4]} {value[4:]}')
+
+        return "< {} >".format(", ".join(res))
+
+    def set(self, value=0):
+        # 清零或全1
+        for i in range(self.size * 8):
+            self[i] = bool(value)
+
+    def flip(self, index=None):
+        # 把第 index 位的值取反，若 index 为 None， 则所有位都取反
+        if index is None:
+            for i in range(self.length):
+                self.flip(i)
+        else:
+            self.values[index // 8] ^= (1 << (7 - index % 8))
 
 
 class MyLog(object):
