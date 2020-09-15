@@ -2014,8 +2014,8 @@ class MyLog(object):
     #                5: logging.Formatter('%(pathname)s - %(levelno)s - %(levelname)s - %(message)s'),
     #                6: logging.Formatter('%(asctime)s - %(msecs)d - %(relativeCreated)d - %(levelname)s - %(message)s')}
 
-    def __init__(self, log_file=None, flag=1, log_tags='', log_format=0):
-        self.log_file = log_file if log_file else 'test.log'
+    def __init__(self, log_file=None, flag=0, log_tags='', log_format=0):
+        self.log_file = log_file if log_file else 'log.txt'
         self.flag = flag  # 0仅写入日志文件， 1二者同时输出 2仅屏幕输出
         self.log_tags = log_tags
         self.log_format = log_format
@@ -2036,10 +2036,10 @@ class MyLog(object):
         # sf.f_code.co_name  # 调用函数名称
         # sf.f_lineno  # 调用处行号
 
-        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}'
+        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}\n'
 
         if self.flag < 2:
-            with open(f'{self.log_path}/{self.log_file}', 'w') as f:
+            with open(f'{self.log_path}/{self.log_file}', 'a') as f:
                 f.write(msg)
 
         if self.flag:

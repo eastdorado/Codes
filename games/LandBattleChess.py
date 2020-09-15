@@ -8,6 +8,8 @@ from functools import partial
 from PyQt5 import QtWidgets, QtGui, QtCore
 from utilities import Utils, MyLog, BitMark, BitSet
 
+sys.setrecursionlimit(100000)  # 这里设置递归深度为十万
+
 
 class Chess(QtWidgets.QFrame):
     ORDER = ('司令', '军长', '师长', '旅长', '团长', '营长',
@@ -41,7 +43,7 @@ class Chess(QtWidgets.QFrame):
     colors = (QtGui.QColor(105, 155, 5),  # 背面底色
               QtGui.QColor(214, 105, 5),  # 红方底色
               QtGui.QColor(30, 105, 160),  # 蓝方底色
-              QtCore.Qt.black, QtCore.Qt.yellow)  # 外框 红色或蓝色
+              QtCore.Qt.red, QtCore.Qt.blue)  # 外框 红色或蓝色
 
     def __init__(self, parent, index, coord):
         super(Chess, self).__init__(parent)
@@ -279,6 +281,28 @@ class MyToolbar(QtWidgets.QWidget):
         p.end()
 
 
+class UnionSet(object):
+    def __init__(self):
+        self.parent = {}
+
+    def init(self, key):
+        if key not in self.parent:
+            self.parent[key] = key
+
+    def find(self, key):
+        self.init(key)
+        while self.parent[key] != key:
+            self.parent[key] = self.parent[self.parent[key]]
+            key = self.parent[key]
+        return key
+
+    def join(self, key1, key2):
+        p1 = self.find(key1)
+        p2 = self.find(key2)
+        if p1 != p2:
+            self.parent[p2] = p1
+
+
 # 军棋（陆战棋）
 class LandBattleChess(QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -300,17 +324,18 @@ class LandBattleChess(QtWidgets.QWidget):
         self.chess_w = round((self.width() - 2 * self.margin - 4 * self.space_w) / 5)
         self.chess_h = round((self.height() - 2 * self.margin - 11 * self.space_h - self.front) / 12)
         self.half_w, self.half_h = round(self.chess_w / 2), round(self.chess_h / 2)
-        self.line_w = self.width() - 2 * self.margin - self.chess_w
-        self.line_h = self.height() - 2 * self.margin - self.chess_h
+        self.line_w = self.width() - 2 * self.margin - self.chess_w  # 铁路横线段的长度
+        self.line_h = self.height() - 2 * self.margin - self.chess_h  # 铁路纵线段的长度
         self.toolbar = MyToolbar(self)
 
         file_name = os.path.split(__file__)[-1].split(".")[0]  # 当前文件名称
-        self.log = MyLog(log_file=f'{file_name}.log', log_tags="")
+        self.log = MyLog(log_file=f'{file_name}.txt', log_tags="")
         # endregion
 
         # region 游戏参数及设置
-        self.board = [[[1, None] for _ in range(5)] for _ in range(12)]  # 座位属性
-        self.composition = [[None] * 5 for i in range(12)]  # 棋局的落子分布
+        # 棋盘地图："兵站类型、九宫邻居列表、棋子控件"
+        self.board = [[[1, None, None] for _ in range(5)] for _ in range(12)]
+        # self.composition = [[None] * 5 for i in range(12)]  # 棋局的落子分布
         self.dark_room = None  # 暗牌坐标列表
         self.bastion = ['红雷', '红雷', '红雷', '红旗', '蓝雷', '蓝雷', '蓝雷', '蓝旗']  # 双方的堡垒
         self.lot = 0  # 手数
@@ -335,8 +360,8 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 32个铁路兵站，默认都是 1  Railway station
         # 14个公路兵站  depot  Highway station
-        self.board[0][0] = [2, None]
-        self.board[0][2] = [2, None]
+        self.board[0][0] = [2, None, None]
+        self.board[0][2] = [2, None, None]
         self.board[0][4][0] = 2
         self.board[2][2][0] = 2
         self.board[3][1][0] = 2
@@ -377,13 +402,30 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         self._init_neighbours()
+
+        # self.enemies[0].clear()
+        # self._find_route(1, 0)
+        # self.log.debug('route:', self.enemies[0])
+
+        # railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 4],
+        #            [3, 0], [3, 4], [4, 0], [4, 4], [5, 0], [5, 1], [5, 2],
+        #            [5, 3], [5, 4], [6, 0], [6, 1], [6, 2], [6, 3], [6, 4],
+        #            [7, 0], [7, 4], [8, 0], [8, 4], [9, 0], [9, 4],
+        #            [10, 0], [10, 1], [10, 2], [10, 3], [10, 4]]
+        # for each in railway:
+        #     self._search_route(each[0], each[1])
+
         # self.replay()
 
     def _init_neighbours(self):
+        tmp = []
         # 连通图设置，各点的邻居设置完毕。
         # 在铁路上则自动单向递归寻找，工兵还需要拐弯寻找，即无条件递归下去
         for row in range(12):
             for col in range(5):
+                if self.board[row][col][0] == 1:
+                    tmp.append([row, col])
+
                 neighbours = []
                 for i in range(-1, 2, 1):
                     for j in range(-1, 2, 1):
@@ -394,16 +436,15 @@ class LandBattleChess(QtWidgets.QWidget):
                         if i * j != 0 and self.board[row][col][0] != 3:  # 对角不是行营
                             continue
                         neighbours.append([row + i, col + j])
-                # print(neighbours)
+
                 self.board[row][col][1] = neighbours
-                # neighbours.clear()
 
         # 中间四个铁路站点要断开一路
         self.board[5][1][1].pop(self.board[5][1][1].index([6, 1]))
         self.board[5][3][1].pop(self.board[5][3][1].index([6, 3]))
         self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
         self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
-        self.log.debug(self.board[4][0], self.board[6][3])
+        self.log.debug(f'铁路兵站：{len(tmp)}个', tmp)
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -431,7 +472,7 @@ class LandBattleChess(QtWidgets.QWidget):
                     qp.drawRect(rect)
 
                 elif self.board[j][i][0] == 3:  # 行营
-                    off1 = off - 10
+                    off1 = off - 5
                     rect = QtCore.QRect(x - off1, y - off1, 2 * off1, 2 * off1)
                     qp.setBrush(QtGui.QBrush(QtGui.QColor(0, 155, 0)))
                     qp.drawEllipse(rect)
@@ -534,7 +575,8 @@ class LandBattleChess(QtWidgets.QWidget):
     def _clear_frame(self, clear_end=False, cur_coord=None):
         if clear_end:
             # 擦除过时红框
-            chess = self.composition[self.move_end[0]][self.move_end[1]]
+            # chess = self.composition[self.move_end[0]][self.move_end[1]]
+            chess = self.board[self.move_end[0]][self.move_end[1]][2]
             chess.update_me(None, 0)
 
             if cur_coord:  # 迎接新红框
@@ -542,11 +584,12 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 擦除无用的蓝框并归零，但是与自己的last红框重合时则需要继续显示
         elif self.move_start and self.move_start != self.move_end:
-            chess = self.composition[self.move_start[0]][self.move_start[1]]
+            chess = self.board[self.move_start[0]][self.move_start[1]][2]
             chess.update_me(None, 0)
             self.move_start = None
 
     def paintEvent(self, e: QtGui.QPaintEvent) -> None:
+
         half_w, half_h = self.half_w, self.half_h
         line_w, line_h = self.line_w, self.line_h
         qp = QtGui.QPainter()
@@ -617,13 +660,105 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # 铁路
-        self._draw_railway(qp, QtGui.QPen(QtGui.QColor(50, 50, 50), 10, QtCore.Qt.SolidLine))
-        self._draw_railway(qp, QtGui.QPen(QtGui.QColor(255, 255, 255), 4, QtCore.Qt.DashLine))
+        self._draw_railway(qp, QtGui.QPen(QtGui.QColor(50, 50, 50), 12, QtCore.Qt.SolidLine))
+        self._draw_railway(qp, QtGui.QPen(QtGui.QColor(255, 255, 255), 5, QtCore.Qt.DotLine))
 
         self._draw_sites(qp)  # 棋子位置
         self._draw_frame(qp)  # 画蓝框框
 
+        # self.log.debug(self.enemies)
+        qp.setPen(QtGui.QPen(QtGui.QColor(50, 50, 250), 5, QtCore.Qt.DotLine))
+        pts = []
+
+        # p = QtCore.QPoint(self.margin + half_w, self.margin + half_h+self.chess_h + self.space_h)
+        # pts.append(p)
+
+        for each in self.enemies[0][:]:
+            x = self.margin + half_w + each[1] * (self.chess_w + self.space_w)
+            y = self.margin + half_h + each[0] * (self.chess_h + self.space_h) if each[0] < 6 else \
+                self.margin + half_h + self.front + each[0] * (self.chess_h + self.space_h)
+            pts.append(QtCore.QPoint(x, y))
+        # pts.append(p)
+
+        qp.drawPolyline(QtGui.QPolygon(pts))
         qp.end()
+
+    def _search_route(self, row, col):
+        self.enemies[1].clear()
+
+        st, neighbours, _ = self.board[row][col]
+        if st != 1 or not neighbours:  # 非铁路
+            return
+
+        chess = self.board[row][col][2]
+        info = chess.get_info()
+        if info[-1] == '工兵':  # 满铁路可走，所有铁路兵站
+            for r in range(12):
+                for c in range(5):
+                    if self.board[r][c][0] == 1:  # 所有铁路站点
+                        self.enemies[1].append([r, c])
+        else:
+            # 横竖都有路
+            if [row, col] in [[1, 0], [1, 4], [5, 0], [5, 2], [5, 4], [6, 0], [6, 2], [6, 4], [10, 0], [10, 4]]:
+                for i in range(5):
+                    if i != col:  # 本身除外
+                        self.enemies[1].append([row, i])  # 横线都加上
+
+                if col == 2:  # 中间2站点
+                    r = 5 if row == 6 else 6
+                    self.enemies[1].append([r, 2])  # 竖线仅一点要加上
+                else:  # 边线上的点
+                    for i in range(1, 11):
+                        if i != row:  # 本身除外
+                            self.enemies[1].append([i, col])  # 竖线点都要加上
+
+            else:  # 要么横向要么竖向
+                for each in neighbours:
+                    st, nb, _ = self.board[each[0]][each[1]]
+                    if st != 1:  # 不是铁路邻居
+                        continue
+                    if each[0] == row:  # 横向铁路线上搜索
+                        for i in range(5):
+                            if i != col:  # 本身除外
+                                self.enemies[1].append([row, i])
+                    else:  # 纵向铁路线上搜索
+                        for i in range(1, 11):
+                            if i != row:  # 本身除外
+                                self.enemies[1].append([i, col])
+                    break
+
+        self.log.debug(f'站点[{row, col}]：', self.enemies[1])
+
+    def _find_enemies(self, row, col):
+        self.enemies[0].clear()
+        st, neighbours, _ = self.board[row][col]
+        if st != 1:  # 非铁路
+            return
+
+        if [row, col] not in self.enemies[0]:
+            self.enemies[0].append([row, col])
+
+        # self.lot += 1
+        # print(st, self.lot)
+        if not neighbours:
+            return
+
+        for each in neighbours:
+            st_n, nb, _ = self.board[each[0]][each[1]]
+
+            if st_n != 1:  # 不是铁路上的邻居
+                continue
+
+            if [row, col] == each:  # 回头了
+                continue
+
+            if each in self.enemies[0]:
+                continue
+
+            self.enemies[0].append(each)
+
+            # print(st_n, each)
+            self._find_route(each[0], each[1])
 
     # def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
     #     super(LandBattleChess, self).resizeEvent(a0)
@@ -639,7 +774,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
         row, col, dx, dy = ret
 
-        chess_hit = self.composition[row][col]
+        chess_hit = self.board[row][col][2]
         if not chess_hit:  # 点击了无棋子的兵站或兵营
             self.rect_blue = QtCore.QRect(dx + 3, dy + 3, self.chess_w - 3, self.chess_h - 3)
             self.update()
@@ -656,13 +791,13 @@ class LandBattleChess(QtWidgets.QWidget):
         self.update()
 
         if self.tmp:  # 先无条件擦除蓝框
-            chess = self.composition[self.tmp[0]][self.tmp[1]]
+            chess = self.board[self.tmp[0]][self.tmp[1]][2]
             _, coord, hidden, _ = chess.get_info()
             chess.update_me(None, 0, hidden)  # 擦除蓝框
             self.tmp = None
 
         if self.move_end:  # 先无条件显示最后的红框
-            chess = self.composition[self.move_end[0]][self.move_end[1]]
+            chess = self.board[self.move_end[0]][self.move_end[1]][2]
             chess.update_me()  # 红框，采用默认值即可
         # endregion
 
@@ -670,17 +805,17 @@ class LandBattleChess(QtWidgets.QWidget):
         if ret is None:
             return
         row, col, dx, dy = ret
-        chess_hit = self.composition[row][col]
+        chess_hit = self.board[row][col][2]
 
         # 处理有效点击事件
         if chess_hit is None:  # 点击了空白位置，还要判断当前棋子能否移动到这个位置
             if False and self.move_start:  # 不能移动，则把当前的蓝框抹去
-                chess_cur = self.composition[self.move_start[0]][self.move_start[1]]
+                chess_cur = self.board[self.move_start[0]][self.move_start[1]][2]
                 chess_cur.update_me(None, 0)
 
             elif self.move_start:  # 能移动则改变当前棋子  地雷、军旗不能移动
                 if self.move_end:  # 擦除上次点击的红框
-                    chess = self.composition[self.move_end[0]][self.move_end[1]]
+                    chess = self.board[self.move_end[0]][self.move_end[1]][2]
                     # print(self.move_end, chess)
                     chess.update_me(None, 0)
 
@@ -688,12 +823,12 @@ class LandBattleChess(QtWidgets.QWidget):
                 # 记录好正确的棋子移动的起始点
 
                 # 棋子移动
-                chess_moving = self.composition[self.move_start[0]][self.move_start[1]]
+                chess_moving = self.board[self.move_start[0]][self.move_start[1]][2]
                 # ret = chess_moving.get_info()
                 # print("棋子内部坐标与外部坐标一致否？：", ret[1], self.cur)
 
-                self.composition[row][col] = chess_moving  # 棋子在分布图上的移动
-                self.composition[self.move_start[0]][self.move_start[1]] = None  # 地图上控件置换
+                self.board[row][col][2] = chess_moving  # 棋子在分布图上的移动
+                self.board[self.move_start[0]][self.move_start[1]][2] = None  # 地图上控件置换
 
                 chess_moving.move(dx, dy)  # 棋子在屏幕上的移动
                 chess_moving.update_me(self.move_end)  # move_end 位置处棋子打上默认的红色框
@@ -715,7 +850,7 @@ class LandBattleChess(QtWidgets.QWidget):
             if self.move_end is None:  # 第一次点了棋子，如机器先手，则不用执行这步
                 self.lot += 1
                 self.move_end = [row, col]  # coord
-                self.me = ID // 12  # 选择玩家阵营
+                self.setting[2] = ID // 12  # 选择玩家阵营
                 chess_hit.update_me()  # 红框，采用默认值即可
                 # print("我是蓝方" if self.me else '我是红方')
                 self.dark_room.pop(self.dark_room.index(row * 5 + col))  # 明牌弹出小黑屋
@@ -725,7 +860,7 @@ class LandBattleChess(QtWidgets.QWidget):
             elif hidden:  # 暗棋需要翻转
                 self.lot += 1
                 self._clear_frame()  # 清除过时蓝框
-                chess_last = self.composition[self.move_end[0]][self.move_end[1]]
+                chess_last = self.board[self.move_end[0]][self.move_end[1]][2]
                 chess_last.update_me(None, 0)  # 擦除上次点击的红框
 
                 self.move_end = coord  # 切换到当前位置
@@ -734,7 +869,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
                 self.call_ai()  # 呼叫 AI 走棋
 
-            elif ID // 12 == self.me:  # 点击的棋子是玩家的
+            elif ID // 12 == self.setting[2]:  # 点击的棋子是玩家的
                 print(f'点击了我方{rank}', coord, [row, col])
                 self._clear_frame()  # 清除过时蓝框
                 self.move_start = coord  # 当前点击一定是蓝的，可以覆盖红框，红框下次自动显示
@@ -746,11 +881,11 @@ class LandBattleChess(QtWidgets.QWidget):
 
                 # 能吃就取代
                 if self.move_start:
-                    chess_start = self.composition[self.move_start[0]][self.move_start[1]]
+                    chess_start = self.board[self.move_start[0]][self.move_start[1]][2]
                     info = chess_start.get_info()
 
                     print(info[3], rank)
-                    ret = self.judge(info[0], ID)
+                    ret = self._judge(info[0], ID)
                     print(ret)
                     if ret > 0:  # 成功吃棋，更新end
                         self._clear_frame(True, coord)
@@ -795,9 +930,8 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # region 游戏数据初始化
-        # region 小黑屋初始化
-        # 小黑屋去掉行营位置，其他位置放棋子
-        self.dark_room = [i for i in range(60)]
+        # region 小黑屋初始化，后面翻棋的时候要用
+        self.dark_room = [i for i in range(60)]  # 小黑屋去掉行营位置，其他位置放棋子
         self.dark_room.pop(self.dark_room.index(11))
         self.dark_room.pop(self.dark_room.index(13))
         self.dark_room.pop(self.dark_room.index(17))
@@ -812,31 +946,24 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # region 军队初始化
-        # army = [i for i in range(50)]  # 在tiles里的id
         army = Chess.army_building()
         random.shuffle(army)
         # print(len(army), army)
         # endregion
 
-        # region 棋子地图随机分布初始化
-        # for row in range(12):
-        #     for col in range(5):
-        #         if self.board[row][col] == 3:  # 行营空置
-        #             continue
         for each in self.dark_room:
             row = each // 5
             col = each % 5
             # print(each, row, col)
 
-            self.composition[row][col] = Chess(self, army.pop(), [row, col])  # 棋局的棋子分布图
+            self.board[row][col][2] = Chess(self, army.pop(), [row, col])  # 棋局的棋子分布图
 
             x = self.margin + col * (self.chess_w + self.space_w)
             y = self.margin + row * (self.chess_h + self.space_h) if row < 6 else \
                 self.margin + self.front + row * (self.chess_h + self.space_h)
 
-            self.composition[row][col].setGeometry(x, y, self.chess_w, self.chess_h)
-            self.composition[row][col].show()
-        # endregion
+            self.board[row][col][2].setGeometry(x, y, self.chess_w, self.chess_h)
+            self.board[row][col][2].show()
         # endregion
 
         # region 开始游戏
@@ -846,11 +973,11 @@ class LandBattleChess(QtWidgets.QWidget):
             self._ai_open_chess()
             if self.move_end:
                 # print(self.move_end)
-                chess_end = self.composition[self.move_end[0]][self.move_end[1]]
+                chess_end = self.board[self.move_end[0]][self.move_end[1]][2]
                 chess_end.update_me()  # 红框，采用默认值即可
                 info = chess_end.get_info()
-                self.me = 1 - info[0] // 12  # 选择玩家阵营
-                print("AI是红方" if self.me else 'AI是蓝方')
+                self.setting[2] = 1 - info[0] // 12  # 选择玩家阵营
+                print("AI是红方" if self.setting[2] else 'AI是蓝方')
         # endregion
 
         # while True:
@@ -869,7 +996,7 @@ class LandBattleChess(QtWidgets.QWidget):
                 self.update()
 
             if self.move_end:  # 擦除上次点击的红框
-                chess = self.composition[self.move_end[0]][self.move_end[1]]
+                chess = self.board[self.move_end[0]][self.move_end[1]][2]
                 chess.update_me(None, 0)  # 擦除上次点击的红框
 
             index = Utils.rand_int(0, len(self.dark_room) - 1)
@@ -879,8 +1006,8 @@ class LandBattleChess(QtWidgets.QWidget):
             # print(row, col, coord, index, self.dark_room)
 
             self.move_end = [row, col]  # 切换到当前位置
-            chess = self.composition[row][col]
-            chess.update_me()  # 红框，采用默认值即可
+            chess = self.board[row][col][2]
+            chess.update_me()  # 当前值用红框，采用默认值即可
 
     def victory(self):
         if '红旗' not in self.bastion:
@@ -901,7 +1028,7 @@ class LandBattleChess(QtWidgets.QWidget):
             return None
         row, col = coord
 
-        chess = self.composition[row][col]
+        chess = self.board[row][col][2]
         ret = chess.get_info()
         if ret[3] in ['地雷', '军旗']:  # 不能移动吃子的
             return None
@@ -945,8 +1072,8 @@ class LandBattleChess(QtWidgets.QWidget):
 
     def _fight_foe(self, row, col, row_foe, col_foe):
         # 与敌人战斗
-        chess = self.composition[row, col]
-        chess_foe = self.composition[row_foe, col_foe]
+        chess = self.board[row, col][2]
+        chess_foe = self.board[row_foe, col_foe][2]
 
         if not chess or not chess_foe:
             return
@@ -972,6 +1099,9 @@ class LandBattleChess(QtWidgets.QWidget):
         if a < 9 and d < 9:
             ret = d - a  # 越小军衔越大
 
+        if a is Chess.ORDER.index('军旗'):
+            return -1
+
         if d is Chess.ORDER.index('军旗'):  # 比炸弹优先，炸弹炸不了
             if a == Chess.ORDER.index('工兵'):
                 if id_attacker < 12:
@@ -989,8 +1119,11 @@ class LandBattleChess(QtWidgets.QWidget):
             else:
                 ret = -1
 
-        elif a == Chess.ORDER.index('炸弹'):  # 比地雷优先
+        elif a == Chess.ORDER.index('炸弹') or d == Chess.ORDER.index('炸弹'):  # 比地雷优先
             ret = 0
+
+        elif a is Chess.ORDER.index('地雷'):
+            return -1
 
         elif d is Chess.ORDER.index('地雷'):
             if a == Chess.ORDER.index('工兵'):

@@ -400,10 +400,11 @@ class ShowTree(QtWidgets.QWidget):
 
 
 class NewAStar(object):
-    """采用二叉堆的A星算法"""
-    def __init__(self, map_w=1, map_h=1):
-        self.map2d_w = map_w
-        self.map2d_h = map_h
+    """采用二叉堆的 A星算法"""
+
+    def __init__(self):
+        self.map2d_w = 1
+        self.map2d_h = 1
 
         self.map2d = []
         self.map2d_size = None
@@ -417,38 +418,53 @@ class NewAStar(object):
         self.open_list = []
         self.close_list = []
 
-        self.init_map2d()
+        self.init_map2d(5, 54, 0, 59)
 
-    def init_map2d(self):
+    def init_map2d(self, map_w=5, map_h=12, start=0, end=59):
         """初始化地图数据"""
+        # [row, col , g, h, v, father]
+        # row，col-坐标 g-当前路径成本 h-估算成本 v-节点的权重 father-父节点
         self.map2d.clear()
         self.open_list.clear()
         self.close_list.clear()
 
+        self.map2d_w = map_w
+        self.map2d_h = map_h
+        self.start = start  # 初始化起点的序号
+        self.end = end  # 初始化终点的序号
         self.map2d_size = self.map2d_w * self.map2d_h  # 地图节点数目
-        self.start = 0  # 初始化起点的序号
-        self.end = self.map2d_size - 1  # 初始化终点的序号
+
         self.open_list.append(self.start)  # 起点放进列表
 
         self.impasse = 4  # 死路
         self.value = [1, 2, 3, self.impasse]  # 权重
 
-        # print(self.end//w, self.end%h)
+        railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 4], [3, 0], [3, 4],
+                   [4, 0], [4, 4], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4],
+                   [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [7, 0], [7, 4], [8, 0], [8, 4],
+                   [9, 0], [9, 4], [10, 0], [10, 1], [10, 2], [10, 3], [10, 4]]  #
 
         for row in range(self.map2d_h):
             for col in range(self.map2d_w):
+                h = (abs(self.end // self.map2d_h - row) + abs(self.end % self.map2d_w - col)) * 10  # 计算h值
+                value = 0
+                if [row, col] in railway and True:  # 铁路兵站可通行,针对军棋铁路上的工兵路线的优化
+                    # value = random.choice(self.value[:1])
+                    value = 2
+                else:
+                    value = self.impasse  # 非铁路兵站当做不通行
+
                 # [row, col , g, h, v, father]
                 # row，col-坐标 g-当前路径成本 h-估算成本 v-节点的权重 father-父节点
-                h = (abs(self.end // self.map2d_h - row) + abs(self.end % self.map2d_w - col)) * 10  # 计算h值
-                self.map2d.append([row, col, 0, h, random.choice(self.value), None])
+                self.map2d.append([row, col, 0, h, value, None])
 
-        self.map2d[self.start][4] = 2  # 起点权重
-        self.map2d[self.end][4] = 3  # 终点权重
+        # self.map2d[self.start][4] = 2  # 起点权重
+        # self.map2d[self.end][4] = 3  # 终点权重
         # print(self.map2d)
 
     def _get_f(self, node):
         assert 0 <= node < self.map2d_size
-        return self.map2d[node][2] + self.map2d[node][3]
+        return self.map2d[node][2] + self.map2d[node][3]  # 价值
 
     # region 插入和删除 open list的项目
     def _insert(self, num):
@@ -538,16 +554,19 @@ class NewAStar(object):
                 if i == node_row and j == node_col:  # 自身检测
                     continue
 
+                if (i + j - node_row - node_col) not in [-1, 1]:  # 四个角忽略，不走对角线
+                    continue
+
                 neighbour_id = i * self.map2d_w + j
 
-                if self.map2d[neighbour_id][4] == self.impasse:  # 去掉障碍物
+                if self.map2d[neighbour_id][4] == self.impasse:  # 避开障碍物
                     continue
 
                 if neighbour_id in self.close_list:  # 已经处理过了
                     continue
 
                 path = abs(node_row - i) + abs(node_col - j)
-                value = 10 if path == 1 else 14
+                value = 10 if path == 1 else 14  # 不容许对角线通过，14则可以
 
                 new_g = self.map2d[neighbour_id][4] * value + self.map2d[node_id][2]  # 计算跨越的代价
 
@@ -573,6 +592,7 @@ class NewAStar(object):
 
         return 0
 
+    # 获得最短路径
     def searching(self):
         path = []
         if self.map2d[self.end][4] != self.impasse:  # 判断寻路终点是否是障碍
@@ -596,18 +616,18 @@ class NewAStar(object):
 
         return path
 
-    def get_min_node(self):
-        if not self.open_list:
-            return None
-
-        node = self.open_list[0]
-        for each in self.open_list:
-            f = self._get_f(each)
-            print(f)
-            if self._get_f(node) > f:  # 等于时怎么办？
-                node = each
-        print(self._get_f(node))
-        return node
+    # def get_min_node(self):
+    #     if not self.open_list:
+    #         return None
+    #
+    #     node = self.open_list[0]
+    #     for each in self.open_list:
+    #         f = self._get_f(each)
+    #         print(f)
+    #         if self._get_f(node) > f:  # 等于时怎么办？
+    #             node = each
+    #     print(self._get_f(node))
+    #     return node
 
 
 class MyAStar(object):
@@ -792,8 +812,8 @@ class D2Pane(QtWidgets.QWidget):
     def __init__(self):
         super(D2Pane, self).__init__()
         self.text = "Лев Николаевич Толстой\nАнна Каренина"
-        self.map_w = 25
-        self.map_h = 25
+        self.map_w = 5
+        self.map_h = 12
         self.colors = [QtGui.QColor(211, 211, 211), QtGui.QColor(155, 155, 155),
                        QtGui.QColor(85, 85, 85), QtGui.QColor(20, 20, 20)]
 
@@ -801,7 +821,7 @@ class D2Pane(QtWidgets.QWidget):
         print('-----------------------------------------')
         print('开始探路1')
         start = time.perf_counter()
-        self.s = NewAStar(self.map_w, self.map_h)
+        self.s = NewAStar()
         # self.s = MyAStar(self.map_w, self.map_h)
         # self.s.find_neighbours(self.map2d.nodes[0][0]
         self.path = self.s.searching()
@@ -830,7 +850,7 @@ class D2Pane(QtWidgets.QWidget):
         self.initUI()
 
     def initUI(self):
-        self.setGeometry(2500, 130, 1000, 800)
+        # self.setGeometry(2500, 130, 1000, 800)
         self.setWindowTitle('A星算法演示')
 
         # btn = QtWidgets.QPushButton('刷新', self)
@@ -843,7 +863,7 @@ class D2Pane(QtWidgets.QWidget):
 
     def clicked(self):
         if self.flag:
-            self.s = NewAStar(self.map_w, self.map_h)
+            self.s = NewAStar()
         else:
             self.s = MyAStar(self.map_w, self.map_h)
         self.path = self.s.searching()
@@ -878,7 +898,7 @@ class D2Pane(QtWidgets.QWidget):
 
         qp.setBrush(QtCore.Qt.green)
         qp.drawEllipse(int(self.s.map2d[node][1] * rt_w + rt_w / 2) - ride,
-                           int(self.s.map2d[node][0] * rt_h + rt_h / 2) - ride, 2 * ride, 2 * ride)
+                       int(self.s.map2d[node][0] * rt_h + rt_h / 2) - ride, 2 * ride, 2 * ride)
 
     def drawNode2(self, qp, node):
         # print(node)
@@ -888,7 +908,7 @@ class D2Pane(QtWidgets.QWidget):
 
         qp.setBrush(QtCore.Qt.red)
         qp.drawEllipse(int(node.point.col * rt_w + rt_w / 2) - ride,
-                        int(node.point.row * rt_h + rt_h / 2) - ride, 2 * ride, 2 * ride)
+                       int(node.point.row * rt_h + rt_h / 2) - ride, 2 * ride, 2 * ride)
 
     def drawMap(self, qp):
         col = QtGui.QColor(0, 0, 0)
@@ -1050,12 +1070,12 @@ class D2Pane(QtWidgets.QWidget):
 class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setGeometry(2500, 40, 1200, 1000)
+        self.wg = D2Pane()
+        self.setGeometry(200, 40, 1200, 1000)
         self.setupUI()
 
     def setupUI(self):
         vl_main = QtWidgets.QVBoxLayout()
-        self.wg = D2Pane()
         # self.wg = ShowTree()
 
         btn = QtWidgets.QPushButton('刷新')
@@ -1065,12 +1085,12 @@ class MainWindow(QtWidgets.QWidget):
         vl_main.addWidget(self.wg)
         self.setLayout(vl_main)
 
-    def resizeEvent(self, event):
-        palette = QtGui.QPalette()
-        pix = QtGui.QPixmap('res/background/bk1.jpg')
-        pix = pix.scaled(self.width(), self.height())
-        palette.setBrush(QtGui.QPalette.Background, QtGui.QBrush(pix))
-        self.setPalette(palette)
+    # def resizeEvent(self, event):
+    #     palette = QtGui.QPalette()
+    #     pix = QtGui.QPixmap('res/background/bk4.jpg')
+    #     pix = pix.scaled(self.width(), self.height())
+    #     palette.setBrush(QtGui.QPalette.Background, QtGui.QBrush(pix))
+    #     self.setPalette(palette)
 
 
 if __name__ == '__main__':
