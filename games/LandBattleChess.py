@@ -41,7 +41,7 @@ class Chess(QtWidgets.QFrame):
     colors = (QtGui.QColor(105, 155, 5),  # 背面底色
               QtGui.QColor(214, 105, 5),  # 红方底色
               QtGui.QColor(30, 105, 160),  # 蓝方底色
-              QtCore.Qt.red, QtCore.Qt.blue)  # 外框 红色或蓝色
+              QtCore.Qt.black, QtCore.Qt.yellow)  # 外框 红色或蓝色
 
     def __init__(self, parent, index, coord):
         super(Chess, self).__init__(parent)
@@ -263,7 +263,7 @@ class MyToolbar(QtWidgets.QWidget):
         # # pix = Utils.img_center(rect.width, rect.height, r'E:/Neworld/res/background/t3.jpg')
         # # painter.setBrush(QtGui.QBrush(pix))  # 设置底图的方式之一
         # # painter.drawRoundedRect(rect, 20, 20)
-        p.drawPixmap(rect, QtGui.QPixmap("E:/Neworld/res/background/t3.png"))
+        p.drawPixmap(rect, QtGui.QPixmap("E:/Codes/res/background/t3.png"))
 
         # 设置字体、大小、字符间距等
         font = QtGui.QFont("华文隶书", 24, QtGui.QFont.Normal)
@@ -309,16 +309,14 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # region 游戏参数及设置
-        self.board = [[1] * 5 for i in range(12)]  # 座位属性
+        self.board = [[[1, None] for _ in range(5)] for _ in range(12)]  # 座位属性
         self.composition = [[None] * 5 for i in range(12)]  # 棋局的落子分布
         self.dark_room = None  # 暗牌坐标列表
         self.bastion = ['红雷', '红雷', '红雷', '红旗', '蓝雷', '蓝雷', '蓝雷', '蓝旗']  # 双方的堡垒
         self.lot = 0  # 手数
         self.setting = BitMark(16)  # 设置区的属性标志位
         self.enemies = [[], []]  # 可攻击的敌手棋子集合，击杀或同归于尽
-        # self.base_camp = False
-        # self.me = 0  # 玩家阵营  0是红方,1是蓝方
-        # self.acting = False  # 还没开局
+        self.log.debug('地图初始化', self.board)
 
         self.tmp = None  # 临时位置，按下时画临时的蓝框用
         self.cur = None  # 选中的棋子位置，蓝框用
@@ -337,46 +335,75 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 32个铁路兵站，默认都是 1  Railway station
         # 14个公路兵站  depot  Highway station
-        self.board[0][0] = 2
-        self.board[0][2] = 2
-        self.board[0][4] = 2
-        self.board[2][2] = 2
-        self.board[3][1] = 2
-        self.board[3][3] = 2
-        self.board[4][2] = 2
-        self.board[7][2] = 2
-        self.board[8][1] = 2
-        self.board[8][3] = 2
-        self.board[9][2] = 2
-        self.board[11][0] = 2
-        self.board[11][2] = 2
-        self.board[11][4] = 2
+        self.board[0][0] = [2, None]
+        self.board[0][2] = [2, None]
+        self.board[0][4][0] = 2
+        self.board[2][2][0] = 2
+        self.board[3][1][0] = 2
+        self.board[3][3][0] = 2
+        self.board[4][2][0] = 2
+        self.board[7][2][0] = 2
+        self.board[8][1][0] = 2
+        self.board[8][3][0] = 2
+        self.board[9][2][0] = 2
+        self.board[11][0][0] = 2
+        self.board[11][2][0] = 2
+        self.board[11][4][0] = 2
         # 10个行营 Line camp
-        self.board[2][1] = 3
-        self.board[2][3] = 3
-        self.board[3][2] = 3
-        self.board[4][1] = 3
-        self.board[4][3] = 3
-        self.board[7][1] = 3
-        self.board[7][3] = 3
-        self.board[8][2] = 3
-        self.board[9][1] = 3
-        self.board[9][3] = 3
+        self.board[2][1][0] = 3
+        self.board[2][3][0] = 3
+        self.board[3][2][0] = 3
+        self.board[4][1][0] = 3
+        self.board[4][3][0] = 3
+        self.board[7][1][0] = 3
+        self.board[7][3][0] = 3
+        self.board[8][2][0] = 3
+        self.board[9][1][0] = 3
+        self.board[9][3][0] = 3
         # 4个大本营 base camp
-        self.board[0][1] = 4
-        self.board[0][3] = 4
-        self.board[11][1] = 4
-        self.board[11][3] = 4
-        # self.log.debug(self.board)
+        self.board[0][1][0] = 4
+        self.board[0][3][0] = 4
+        self.board[11][1][0] = 4
+        self.board[11][3][0] = 4
+        self.log.debug('地图站点属性设置后', self.board)
         # endregion
 
+        # region 系统设置
         self.setting[0] = 1  # 玩家先手，0 ai先手   me_first = False
         self.setting[1] = 1  # 大本营不吃子  base_camp = False
 
         self.setting[2] = 1  # 玩家阵营  0是红方,1是蓝方
         self.setting[3] = 0  # 已经开局
+        # endregion
 
-        self.replay()
+        self._init_neighbours()
+        # self.replay()
+
+    def _init_neighbours(self):
+        # 连通图设置，各点的邻居设置完毕。
+        # 在铁路上则自动单向递归寻找，工兵还需要拐弯寻找，即无条件递归下去
+        for row in range(12):
+            for col in range(5):
+                neighbours = []
+                for i in range(-1, 2, 1):
+                    for j in range(-1, 2, 1):
+                        if i == 0 and j == 0:  # 自己
+                            continue
+                        if not self._valid_coord([row + i, col + j]):  # 界外
+                            continue
+                        if i * j != 0 and self.board[row][col][0] != 3:  # 对角不是行营
+                            continue
+                        neighbours.append([row + i, col + j])
+                # print(neighbours)
+                self.board[row][col][1] = neighbours
+                # neighbours.clear()
+
+        # 中间四个铁路站点要断开一路
+        self.board[5][1][1].pop(self.board[5][1][1].index([6, 1]))
+        self.board[5][3][1].pop(self.board[5][3][1].index([6, 3]))
+        self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
+        self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
+        self.log.debug(self.board[4][0], self.board[6][3])
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -391,19 +418,19 @@ class LandBattleChess(QtWidgets.QWidget):
                 y = self.margin + half_h + j * (self.chess_h + self.space_h) if j < 6 else \
                     self.margin + half_h + self.front + j * (self.chess_h + self.space_h)
 
-                if self.board[j][i] < 3:  # 兵站
+                if self.board[j][i][0] < 3:  # 兵站
                     rect = QtCore.QRect(x - off, y - off // 2, off * 2, off)
                     qp.setBrush(QtGui.QBrush(QtGui.QColor(0, 155, 0)))
                     qp.drawRect(rect)
                     dx, dy = off - 8, off // 2 - 8
                     rect = QtCore.QRect(x - dx, y - dy, 2 * dx, 2 * dy)
-                    if self.board[j][i] == 1:  # 铁路兵站
+                    if self.board[j][i][0] == 1:  # 铁路兵站
                         qp.setBrush(QtGui.QBrush(QtCore.Qt.darkGray))
                     else:  # 公路兵站
                         qp.setBrush(QtGui.QBrush(QtCore.Qt.gray))
                     qp.drawRect(rect)
 
-                elif self.board[j][i] == 3:  # 行营
+                elif self.board[j][i][0] == 3:  # 行营
                     off1 = off - 10
                     rect = QtCore.QRect(x - off1, y - off1, 2 * off1, 2 * off1)
                     qp.setBrush(QtGui.QBrush(QtGui.QColor(0, 155, 0)))
@@ -526,7 +553,7 @@ class LandBattleChess(QtWidgets.QWidget):
         qp.begin(self)
 
         qp.setRenderHint(QtGui.QPainter.Antialiasing)  # 抗锯齿
-        qp.drawPixmap(0, 0, QtGui.QPixmap("E:/Neworld/res/background/background2.jpg"))
+        qp.drawPixmap(0, 0, QtGui.QPixmap("E:/Codes/res/background/background2.jpg"))
 
         # region 纵横线
         qp.setPen(QtGui.QPen(QtGui.QColor(50, 50, 50), 2, QtCore.Qt.SolidLine))
@@ -882,53 +909,59 @@ class LandBattleChess(QtWidgets.QWidget):
         self.enemies[0].clear()
         self.enemies[1].clear()
 
-        if self.board[row][col] in [2, 4]:  # 2: 公路兵站14个，一步一站  4:大本营4个
-            self._search_neighbour_near(row, col)
+        # if self.board[row][col] in [2, 4]:  # 2: 公路兵站14个，一步一站  4:大本营4个
+        #     self._search_foes_near(row, col)
+        #
+        # elif self.board[row][col] == 3:  # 3:行营10个
+        #     self._search_foes_near(row, col)
+        #
+        #     if self._valid_coord(row - 1, col - 1):
+        #         self._fight_foe(row, col, row - 1, col - 1)
+        #     if self._valid_coord(row - 1, col + 1):
+        #         self._fight_foe(row, col, row - 1, col + 1)
+        #     if self._valid_coord(row + 1, col - 1):
+        #         self._fight_foe(row, col, row + 1, col - 1)
+        #     if self._valid_coord(row + 1, col + 1):
+        #         self._fight_foe(row, col, row + 1, col + 1)
 
-        elif self.board[row][col] == 3:  # 3:行营10个
-            self._search_neighbour_near(row, col)
-
-            if self._valid_coord(row - 1, col - 1):
-                self._fight_neighbour(row, col, row - 1, col - 1)
-            if self._valid_coord(row - 1, col + 1):
-                self._fight_neighbour(row, col, row - 1, col + 1)
-            if self._valid_coord(row + 1, col - 1):
-                self._fight_neighbour(row, col, row + 1, col - 1)
-            if self._valid_coord(row + 1, col + 1):
-                self._fight_neighbour(row, col, row + 1, col + 1)
-
-        else:  # 缺省1: 铁路兵站32个，一步多站   0:界外无效
+        if self.board[row][col][0] == 1:  # 缺省1: 铁路兵站32个，一步多站   0:界外无效
             ...
+        else:  # 非铁路，邻居已定
+            neighbours = self.board[row][col][1]
+            self.log.debug(neighbours)
+            for each in neighbours:
+                self._fight_foe(row, col, each[0], each[1])
 
-
-    def _search_neighbour_near(self, row, col):
+    def _search_foes_on_railway(self, row, col):
+        # 搜索铁路上的敌人
         if self._valid_coord(row, col - 1):
-            self._fight_neighbour(row, col, row, col - 1)
+            self._fight_foe(row, col, row, col - 1)
         if self._valid_coord(row, col + 1):
-            self._fight_neighbour(row, col, row, col + 1)
+            self._fight_foe(row, col, row, col + 1)
         if self._valid_coord(row - 1, col):
-            self._fight_neighbour(row, col, row - 1, col)
+            self._fight_foe(row, col, row - 1, col)
         if self._valid_coord(row + 1, col):
-            self._fight_neighbour(row, col, row + 1, col)
+            self._fight_foe(row, col, row + 1, col)
 
-    def _fight_neighbour(self, row1, col1, row2, col2):
-        chess1 = self.composition[row1, col1]
-        chess2 = self.composition[row2, col2]
+    def _fight_foe(self, row, col, row_foe, col_foe):
+        # 与敌人战斗
+        chess = self.composition[row, col]
+        chess_foe = self.composition[row_foe, col_foe]
 
-        if not chess1 or not chess2:
+        if not chess or not chess_foe:
             return
 
-        ret1 = chess1.get_info()
-        ret2 = chess2.get_info()
+        ret = chess.get_info()
+        ret_foe = chess_foe.get_info()
 
-        if abs(ret1[0] - ret2[0]) < 12:  # 自己人
+        if abs(ret[0] - ret_foe[0]) < 12:  # 自己人
             return
 
-        result = self._judge(ret1[0], ret2[0])
+        result = self._judge(ret[0], ret_foe[0])
         if result == 0:
-            self.enemies[1].append(chess2)
+            self.enemies[1].append(chess_foe)
         elif result > 0:
-            self.enemies[0].append(chess2)
+            self.enemies[0].append(chess_foe)
 
     # 战斗裁判   =0：同归于尽  <0：失败  >0：胜利
     def _judge(self, id_attacker, id_defender):
