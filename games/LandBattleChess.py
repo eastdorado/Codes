@@ -1443,6 +1443,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
         animation.setDuration(250 * length)
         # animation.setLoopCount(3)
+        # animation.setEasingCurve(QEasingCurve.OutBounce)  # setEasingCurve动画曲线
         animation.start()
 
     def move_chess(self, coord_start, coord_end, path=[]):
