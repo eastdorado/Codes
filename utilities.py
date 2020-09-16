@@ -1211,13 +1211,13 @@ class Utils(object):
                         print(" ", end='', file=fh)
                 print(item, file=fh)
 
-    @staticmethod
-    def cout_dict(the_dict, json_file):
-        # stus = {'xiaojun': '123456', 'xiaohei': '7890', 'lrx': '111111'}
-        res = json.dumps(the_dict, indent=4, ensure_ascii=False, cls=MyEncoder)  # 使用.dumps()方法是要写入
-        with open(json_file, 'w', encoding='utf8') as f:
-            # json.dump(the_dict, f)
-            f.write(res)
+    # @staticmethod
+    # def cout_dict(the_dict, json_file):
+    #     # stus = {'xiaojun': '123456', 'xiaohei': '7890', 'lrx': '111111'}
+    #     res = json.dumps(the_dict, indent=4, ensure_ascii=False, cls=MyEncoder)  # 使用.dumps()方法是要写入
+    #     with open(json_file, 'w', encoding='utf8') as f:
+    #         # json.dump(the_dict, f)
+    #         f.write(res)
 
     # region string 中包含数字，根据数字排序
     ''' python list sort中string 中包含数字，根据数字排序 '''

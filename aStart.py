@@ -418,7 +418,7 @@ class NewAStar(object):
         self.open_list = []
         self.close_list = []
 
-        self.init_map2d(5, 54, 0, 59)
+        self.init_map2d(5, 54, 5, 54)
 
     def init_map2d(self, map_w=5, map_h=12, start=0, end=59):
         """初始化地图数据"""
