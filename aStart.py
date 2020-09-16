@@ -439,20 +439,10 @@ class NewAStar(object):
         self.impasse = 4  # 死路
         self.value = [1, 2, 3, self.impasse]  # 权重
 
-        railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 4], [3, 0], [3, 4],
-                   [4, 0], [4, 4], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4],
-                   [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [7, 0], [7, 4], [8, 0], [8, 4],
-                   [9, 0], [9, 4], [10, 0], [10, 1], [10, 2], [10, 3], [10, 4]]  #
-
         for row in range(self.map2d_h):
             for col in range(self.map2d_w):
                 h = (abs(self.end // self.map2d_h - row) + abs(self.end % self.map2d_w - col)) * 10  # 计算h值
-                value = 0
-                if [row, col] in railway and True:  # 铁路兵站可通行,针对军棋铁路上的工兵路线的优化
-                    # value = random.choice(self.value[:1])
-                    value = 2
-                else:
-                    value = self.impasse  # 非铁路兵站当做不通行
+                value = random.choice(self.value)
 
                 # [row, col , g, h, v, father]
                 # row，col-坐标 g-当前路径成本 h-估算成本 v-节点的权重 father-父节点
@@ -867,6 +857,7 @@ class D2Pane(QtWidgets.QWidget):
         else:
             self.s = MyAStar(self.map_w, self.map_h)
         self.path = self.s.searching()
+        print(self.path)
         self.update()
 
     def paintEvent(self, event):
@@ -1098,3 +1089,7 @@ if __name__ == '__main__':
     win = MainWindow()
     win.show()
     sys.exit(app.exec_())
+
+    # dd = []
+    # for each in dd:
+    #     print('dd')

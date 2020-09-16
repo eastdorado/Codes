@@ -2014,7 +2014,7 @@ class MyLog(object):
     #                5: logging.Formatter('%(pathname)s - %(levelno)s - %(levelname)s - %(message)s'),
     #                6: logging.Formatter('%(asctime)s - %(msecs)d - %(relativeCreated)d - %(levelname)s - %(message)s')}
 
-    def __init__(self, log_file=None, flag=0, log_tags='', log_format=0):
+    def __init__(self, log_file=None, flag=2, log_tags='', log_format=0):
         self.log_file = log_file if log_file else 'log.txt'
         self.flag = flag  # 0仅写入日志文件， 1二者同时输出 2仅屏幕输出
         self.log_tags = log_tags
