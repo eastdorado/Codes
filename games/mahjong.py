@@ -635,7 +635,7 @@ class MahjongTable(QtWidgets.QFrame):
         msg = "麻将大王"
         p.setPen(QtGui.QPen(QtCore.Qt.darkGray))
         # p.drawText(rect, msg, Qt.AlignCenter)
-        x, y = 100, 100
+        x, y = 10, 10
         ft = QtGui.QFont("华文行楷", 62, QtGui.QFont.Bold)
         p.setFont(ft)
         for i in range(5):
@@ -676,7 +676,7 @@ class MainWindow(QtWidgets.QWidget):
     def init_win(self):
         self.setWindowTitle('麻将乐园')
 
-        self.move(self.width() * (-2), 0)  # 先将窗口放到屏幕外，可避免移动窗口时的闪烁现象。
+        self.move(self.width() * (-1), 0)  # 先将窗口放到屏幕外，可避免移动窗口时的闪烁现象。
         self.show()
 
         height_title = self.frameGeometry().height() - self.geometry().height()
@@ -688,9 +688,10 @@ class MainWindow(QtWidgets.QWidget):
         # screenRect = desktop.screenGeometry()
 
         # self.setFixedSize(1200, height-100)
-        # print(height, height_title)
-        self.resize(1200, height - height_title)
-        self.move(width // 2 - 600, 2)
+        # print(height//2, height_title)
+        self.resize(600, height - height_title)
+        # self.move(width // 2 - 600, 2)
+        self.move(0, 0)
 
         # Utils.center_win(self)
 

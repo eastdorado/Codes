@@ -165,13 +165,65 @@ class Chess(QtWidgets.QFrame):
         p.end()
 
     # def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
-    #     self._hide = False
-    #     self.state = 4  # 蓝框
-    #     self.update()
+    #     # self._hide = False
+    #     # self.state = 4  # 蓝框
+    #     # self.update()
     #     # self._parent.chess_clicked(self)  # 传回当前棋子
+
+    # def animation_me(self, path=None):
+    #     if not path:
+    #         return
+    #
+    #     # 动画设置
+    #     animation = QtCore.QPropertyAnimation(self, b"pos", self._parent)
+    #     # length = len(path)
+    #     # delay = 1/length
+    #     # for i in range(length):
+    #     #     animation.setKeyValueAt(i*delay, path[i])
+    #
+    #     animation.setKeyValueAt(0, QtCore.QPoint(150, 150))
+    #     animation.setKeyValueAt(0.25, QtCore.QPoint(550, 150))
+    #     animation.setKeyValueAt(0.5, QtCore.QPoint(550, 550))
+    #     animation.setKeyValueAt(0.75, QtCore.QPoint(150, 550))
+    #     animation.setKeyValueAt(1, QtCore.QPoint(150, 150))
+    #
+    #     animation.setDuration(5000)
+    #     # animation.setLoopCount(3)
+    #
+    #     # animation.start()
+    #
+    #     animation2 = QtCore.QPropertyAnimation(self, b"pos", self._parent)
+    #
+    #     animation2.setKeyValueAt(0, QtCore.QPoint(0, 0))
+    #     animation2.setKeyValueAt(0.25, QtCore.QPoint(0, 700))
+    #     animation2.setKeyValueAt(0.5, QtCore.QPoint(700, 700))
+    #     animation2.setKeyValueAt(0.75, QtCore.QPoint(700, 0))
+    #     animation2.setKeyValueAt(1, QtCore.QPoint(0, 0))
+    #
+    #     animation2.setDuration(5000)
+    #     # animation2.setLoopCount(3)
+    #
+    #     # animation2.start()
+    #
+    #     animation_group1 = QtCore.QSequentialAnimationGroup(self._parent)  # 设置一个动画组
+    #     # QSequentialAnimationGroup # 串行动画，多个动画挨个执行
+    #     # QParallelAnimationGroup  # 并行动画，多个动画一块执行
+    #     animation_group1.addAnimation(animation)  # 添加动画
+    #     # animation_group1.addPause(5000) #串行动画暂时时间，串行
+    #
+    #     pasuse_animation = QtCore.QPauseAnimation()  # 暂停动画
+    #     pasuse_animation.setDuration(3000)  # 设置暂停时间
+    #     animation_group1.addAnimation(pasuse_animation)  # 添加动画
+    #
+    #     animation_group1.addAnimation(animation2)  # 添加动画
+    #     animation_group1.start()  # 动画组开始执行
+    #
+    #     # red_btn.clicked.connect(animation_group1.pause)
+    #     # green_btn.clicked.connect(animation_group1.resume)
 
     @staticmethod
     def army_building():
+        # 创建全副军队
         return [Chess.ORDER.index(soldier) for soldier in Chess.FORM] + \
                [Chess.ORDER.index(soldier) + 12 for soldier in Chess.FORM]
         # id_red = list(Chess.CODE.lower())
@@ -450,14 +502,13 @@ class LandBattleChess(QtWidgets.QWidget):
         # 绘制棋盘底图
 
         off = 26
-        half_w, half_h = self.half_w, self.half_h
         for j in range(12):
             for i in range(5):
                 qp.setPen(QtGui.QPen(QtGui.QColor(55, 55, 55), 2, QtCore.Qt.SolidLine))
 
-                x = self.margin + half_w + i * (self.chess_w + self.space_w)
-                y = self.margin + half_h + j * (self.chess_h + self.space_h) if j < 6 else \
-                    self.margin + half_h + self.front + j * (self.chess_h + self.space_h)
+                x = self.margin + self.half_w + i * (self.chess_w + self.space_w)
+                y = self.margin + self.half_h + j * (self.chess_h + self.space_h)
+                y = y if j < 6 else y + self.front
 
                 if self.board[j][i][0] < 3:  # 兵站
                     rect = QtCore.QRect(x - off, y - off // 2, off * 2, off)
@@ -498,34 +549,32 @@ class LandBattleChess(QtWidgets.QWidget):
                         qp.drawText(rect, QtCore.Qt.AlignCenter, '大本营')
 
     def _draw_railway(self, qp: QtGui.QPainter, pen: QtGui.QPen):
-        half_w, half_h = self.half_w, self.half_h
-        line_w, line_h = self.line_w, self.line_h
         # 铁路
         qp.setPen(pen)
-        pts = [QtCore.QPoint(self.margin + half_w,
-                             self.margin + half_h + self.chess_h + self.space_h),
-               QtCore.QPoint(self.margin + half_w + line_w,
-                             self.margin + half_h + self.chess_h + self.space_h),
-               QtCore.QPoint(self.margin + half_w + line_w,
-                             self.margin + half_h + self.front + 10 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w,
-                             self.margin + half_h + self.front + 10 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w,
-                             self.margin + half_h + self.chess_h + self.space_h)]
+        pts = [QtCore.QPoint(self.margin + self.half_w,
+                             self.margin + self.half_h + self.chess_h + self.space_h),
+               QtCore.QPoint(self.margin + self.half_w + self.line_w,
+                             self.margin + self.half_h + self.chess_h + self.space_h),
+               QtCore.QPoint(self.margin + self.half_w + self.line_w,
+                             self.margin + self.half_h + self.front + 10 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w,
+                             self.margin + self.half_h + self.front + 10 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w,
+                             self.margin + self.half_h + self.chess_h + self.space_h)]
         qp.drawPolyline(QtGui.QPolygon(pts))
 
-        qp.drawLine(self.margin + half_w,
-                    self.margin + half_h + 5 * (self.chess_h + self.space_h),
-                    self.margin + half_w + line_w,
-                    self.margin + half_h + 5 * (self.chess_h + self.space_h))
-        qp.drawLine(self.margin + half_w,
-                    self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h),
-                    self.margin + half_w + line_w,
-                    self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h))
-        qp.drawLine(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                    self.margin + half_h + 5 * (self.chess_h + self.space_h),
-                    self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                    self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w,
+                    self.margin + self.half_h + 5 * (self.chess_h + self.space_h),
+                    self.margin + self.half_w + self.line_w,
+                    self.margin + self.half_h + 5 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w,
+                    self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h),
+                    self.margin + self.half_w + self.line_w,
+                    self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                    self.margin + self.half_h + 5 * (self.chess_h + self.space_h),
+                    self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                    self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h))
 
     def _draw_frame(self, qp: QtGui.QPainter):
         # 在空的兵站上画蓝框框
@@ -589,9 +638,6 @@ class LandBattleChess(QtWidgets.QWidget):
             self.move_start = None
 
     def paintEvent(self, e: QtGui.QPaintEvent) -> None:
-
-        half_w, half_h = self.half_w, self.half_h
-        line_w, line_h = self.line_w, self.line_h
         qp = QtGui.QPainter()
         qp.begin(self)
 
@@ -601,61 +647,63 @@ class LandBattleChess(QtWidgets.QWidget):
         # region 纵横线
         qp.setPen(QtGui.QPen(QtGui.QColor(50, 50, 50), 2, QtCore.Qt.SolidLine))
         for j in range(12):
-            x = self.margin + half_w
-            y = self.margin + half_h + j * (self.chess_h + self.space_h) if j < 6 else \
-                self.margin + half_h + j * (self.chess_h + self.space_h) + self.front
-            qp.drawLine(x, y, x + line_w, y)
+            x = self.margin + self.half_w
+            y = self.margin + self.half_h + j * (self.chess_h + self.space_h)
+            y = y if j < 6 else y + self.front
+            qp.drawLine(x, y, x + self.line_w, y)
 
         for i in range(0, 5, 2):
-            x = self.margin + half_w + i * (self.chess_w + self.space_w)
-            y = self.margin + half_h
-            qp.drawLine(x, y, x, y + line_h)
+            x = self.margin + self.half_w + i * (self.chess_w + self.space_w)
+            y = self.margin + self.half_h
+            qp.drawLine(x, y, x, y + self.line_h)
 
         for i in range(1, 5, 2):
-            x = self.margin + half_w + i * (self.chess_w + self.space_w)
-            y = self.margin + half_h
+            x = self.margin + self.half_w + i * (self.chess_w + self.space_w)
+            y = self.margin + self.half_h
             qp.drawLine(x, y, x, y + 5 * (self.chess_h + self.space_h))
-            qp.drawLine(x, y + self.front + 6 * (self.chess_h + self.space_h), x, y + line_h)
+            qp.drawLine(x, y + self.front + 6 * (self.chess_h + self.space_h), x, y + self.line_h)
         # endregion
 
         # region 斜线
-        qp.drawLine(self.margin + half_w, self.margin + half_h + self.chess_h + self.space_h,
-                    self.margin + half_w + line_w, self.margin + half_h + 5 * (self.chess_h + self.space_h))
-        qp.drawLine(self.margin + half_w + line_w, self.margin + half_h + self.chess_h + self.space_h,
-                    self.margin + half_w, self.margin + half_h + 5 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w,
+                    self.margin + self.half_h + self.chess_h + self.space_h,
+                    self.margin + self.half_w + self.line_w,
+                    self.margin + self.half_h + 5 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w + self.line_w, self.margin + self.half_h + self.chess_h + self.space_h,
+                    self.margin + self.half_w, self.margin + self.half_h + 5 * (self.chess_h + self.space_h))
 
-        pts = [QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + self.chess_h + self.space_h + half_h),
-               QtCore.QPoint(self.margin + half_w + line_w,
-                             self.margin + 3 * (self.chess_h + self.space_h) + half_h),
+        pts = [QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + self.chess_h + self.space_h + self.half_h),
+               QtCore.QPoint(self.margin + self.half_w + self.line_w,
+                             self.margin + 3 * (self.chess_h + self.space_h) + self.half_h),
 
-               QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + 5 * (self.chess_h + self.space_h) + half_h),
-               QtCore.QPoint(self.margin + half_w,
-                             self.margin + 3 * (self.chess_h + self.space_h) + half_h),
-               QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + self.chess_h + self.space_h + half_h)]
+               QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + 5 * (self.chess_h + self.space_h) + self.half_h),
+               QtCore.QPoint(self.margin + self.half_w,
+                             self.margin + 3 * (self.chess_h + self.space_h) + self.half_h),
+               QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + self.chess_h + self.space_h + self.half_h)]
         qp.drawPolyline(QtGui.QPolygon(pts))
 
-        qp.drawLine(self.margin + half_w,
-                    self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h),
-                    self.margin + half_w + line_w,
-                    self.margin + half_h + self.front + 10 * (self.chess_h + self.space_h))
-        qp.drawLine(self.margin + half_w + line_w,
-                    self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h),
-                    self.margin + half_w,
-                    self.margin + half_h + self.front + 10 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w,
+                    self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h),
+                    self.margin + self.half_w + self.line_w,
+                    self.margin + self.half_h + self.front + 10 * (self.chess_h + self.space_h))
+        qp.drawLine(self.margin + self.half_w + self.line_w,
+                    self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h),
+                    self.margin + self.half_w,
+                    self.margin + self.half_h + self.front + 10 * (self.chess_h + self.space_h))
 
-        pts = [QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w + line_w,
-                             self.margin + half_h + self.front + 8 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + half_h + self.front + 10 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w,
-                             self.margin + half_h + self.front + 8 * (self.chess_h + self.space_h)),
-               QtCore.QPoint(self.margin + half_w + 2 * (self.chess_w + self.space_w),
-                             self.margin + half_h + self.front + 6 * (self.chess_h + self.space_h))]
+        pts = [QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w + self.line_w,
+                             self.margin + self.half_h + self.front + 8 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + self.half_h + self.front + 10 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w,
+                             self.margin + self.half_h + self.front + 8 * (self.chess_h + self.space_h)),
+               QtCore.QPoint(self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
+                             self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h))]
         qp.drawPolyline(QtGui.QPolygon(pts))
         # endregion
 
@@ -666,6 +714,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self._draw_sites(qp)  # 棋子位置
         self._draw_frame(qp)  # 画蓝框框
 
+        # region 测试
         # self.log.debug(self.enemies)
         qp.setPen(QtGui.QPen(QtGui.QColor(50, 50, 250), 5, QtCore.Qt.DotLine))
         pts = []
@@ -674,13 +723,14 @@ class LandBattleChess(QtWidgets.QWidget):
         # pts.append(p)
 
         for each in self.enemies[0][:]:
-            x = self.margin + half_w + each[1] * (self.chess_w + self.space_w)
-            y = self.margin + half_h + each[0] * (self.chess_h + self.space_h) if each[0] < 6 else \
-                self.margin + half_h + self.front + each[0] * (self.chess_h + self.space_h)
+            x = self.margin + self.half_w + each[1] * (self.chess_w + self.space_w)
+            y = self.margin + self.half_h + each[0] * (self.chess_h + self.space_h) if each[0] < 6 else \
+                self.margin + self.half_h + self.front + each[0] * (self.chess_h + self.space_h)
             pts.append(QtCore.QPoint(x, y))
         # pts.append(p)
-
         qp.drawPolyline(QtGui.QPolygon(pts))
+        # endregion
+
         qp.end()
 
     def _search_route(self, row, col):
@@ -841,7 +891,9 @@ class LandBattleChess(QtWidgets.QWidget):
                 self.update()
 
                 self.move_start = None
-                self.call_ai()  # 呼叫 AI 走棋
+
+                self.anti(chess_moving, [9])
+                # self.call_ai()  # 呼叫 AI 走棋
 
         else:  # 点中了棋子
             ID, coord, hidden, rank = chess_hit.get_info()
@@ -911,6 +963,34 @@ class LandBattleChess(QtWidgets.QWidget):
     #     self.pre = self.cur
     #     self.cur = chess
     #     print('chess')
+
+    def anti(self, chess, path):
+        # 棋子移动动画
+        if not chess or not path:
+            return
+
+        railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 4], [3, 0], [3, 4],
+                   [4, 0], [4, 4], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4],
+                   [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [7, 0], [7, 4], [8, 0], [8, 4],
+                   [9, 0], [9, 4], [10, 0], [10, 1], [10, 2], [10, 3], [10, 4]]
+
+        path = []
+        for each in railway:
+            x = self.margin + self.half_w + each[1] * (self.chess_w + self.space_w)
+            y = self.margin + self.half_h + each[0] * (self.chess_h + self.space_h)
+            y = y if each[0] < 6 else y + self.front
+            path.append(QtCore.QPoint(x, y))
+
+        # 动画设置
+        animation = QtCore.QPropertyAnimation(chess, b"pos", self)
+        length = len(path)
+        delay = 1 / length
+        for i in range(length):
+            animation.setKeyValueAt(i * delay, path[i])
+
+        animation.setDuration(250 * length)
+        # animation.setLoopCount(3)
+        animation.start()
 
     # 新局开始，随机布子
     def replay(self):
@@ -987,6 +1067,20 @@ class LandBattleChess(QtWidgets.QWidget):
         # 电脑走起
         self._ai_open_chess()
         # 吃棋
+
+    def checking(self, site_start, site_end):
+        if not site_end or not site_start:
+            return
+        if not self._valid_coord(site_end) or not self._valid_coord(site_start):
+            return
+
+        chess_s = self.board[site_end[0]][site_end[1]][2]  # 进攻方棋子或选中的棋子
+        chess_e = self.board[site_end[0]][site_end[1]][2]  # 防守方棋子或前进的位置
+
+        if chess_s is None:  # 必须有棋子
+            return
+
+        # 通达性检核
 
     def _ai_open_chess(self):
         # AI翻棋
