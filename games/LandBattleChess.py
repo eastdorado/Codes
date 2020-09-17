@@ -4,10 +4,10 @@
 import sys
 import random
 import os
+import copy
 from functools import partial
 from PyQt5 import QtWidgets, QtGui, QtCore
 from utilities import Utils, MyLog, BitMark
-from aStart import NewAStar
 
 sys.setrecursionlimit(100000)  # 这里设置递归深度为十万
 
@@ -674,10 +674,12 @@ class LandBattleChess(QtWidgets.QWidget):
     # region 界面及数据的初始化函数区
     def _init_board(self):
         # region 站点的属性设置
-        # 缺省1:铁路兵站32个，一步多站 2:公路兵站14个，一步一站
+
+        # 1:铁路兵站32个，一步多站 2:公路兵站14个，一步一站
         # 3:行营10个 4:大本营4个 0:界外无效
 
         # 32个铁路兵站，默认都是 1  Railway station
+
         # 14个公路兵站  depot  Highway station
         self.board[0][0] = [2, None, None]
         self.board[0][2] = [2, None, None]
@@ -712,6 +714,8 @@ class LandBattleChess(QtWidgets.QWidget):
         # self.log.debug('地图站点属性设置后', self.board)
         # endregion
 
+        self._init_neighbours()
+
         # region 系统设置
         self.setting[0] = 1  # 玩家先手，0 ai先手   me_first = False
         self.setting[1] = 1  # 大本营不吃子  base_camp = False
@@ -720,8 +724,6 @@ class LandBattleChess(QtWidgets.QWidget):
 
         self.setting[8] = 0  # 已经开局
         # endregion
-
-        self._init_neighbours()
 
         # self.enemies[0].clear()
         # self._find_route(1, 0)
@@ -738,33 +740,39 @@ class LandBattleChess(QtWidgets.QWidget):
         self.replay()
 
     def _init_neighbours(self):
-        tmp = []
-        # 连通图设置，各点的邻居设置完毕。
-        # 在铁路上则自动单向递归寻找，工兵还需要拐弯寻找，即无条件递归下去
+        """ 连通图设置，各点的邻居设置。"""
+
+        # tmp = []  # 所有铁路站点的合集
+        neighbours = []
+
         for row in range(12):
             for col in range(5):
-                if self.board[row][col][0] == 1:
-                    tmp.append([row, col])
 
-                neighbours = []
-                for i in range(-1, 2, 1):
-                    for j in range(-1, 2, 1):
-                        if i == 0 and j == 0:  # 自己
-                            continue
+                # if self.board[row][col][0] == 1:  # 铁路站点
+                #     tmp.append([row, col])
+
+                neighbours.clear()
+                for i in range(-1, 2):
+                    for j in range(-1, 2):
                         if self._invalid_coord([row + i, col + j]):  # 界外
                             continue
-                        if i * j != 0 and self.board[row][col][0] != 3:  # 对角不是行营
+                        if i == 0 and j == 0:  # 自己
                             continue
+                        if i * j != 0 and self.board[row + i][col + j][0] != 3:  # 对角不是行营
+                            # print(i, j, self.board[row + i][col + j][0])
+                            continue
+
                         neighbours.append([row + i, col + j])
 
-                self.board[row][col][1] = neighbours
+                # 复合类型一定要用深拷贝，否则都是一个数据
+                self.board[row][col][1] = copy.deepcopy(neighbours)
 
         # 中间四个铁路站点要断开一路
         self.board[5][1][1].pop(self.board[5][1][1].index([6, 1]))
         self.board[5][3][1].pop(self.board[5][3][1].index([6, 3]))
         self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
         self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
-        # self.log.debug(f'铁路兵站：{len(tmp)}个', tmp)
+        # self.log.debug(f'地图：{len(self.board)}个', self.board[5][4])
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -1060,7 +1068,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
             node_sel = self.board[self.selected[0]][self.selected[1]]
             path = self.search_way(self.selected, coord_cur)  # 判断上次选中棋子能否移动到当前位置
-
+            # self.log.debug(self.selected, coord_cur, path)
             # 路径不通，选中棋子不能移动到当前位置处，或者选中的是地雷、军旗，也不能移动
             if not path or node_sel[2].get_info()[3] in ['地雷', '军旗']:
                 self._flush_chess()
@@ -1094,12 +1102,16 @@ class LandBattleChess(QtWidgets.QWidget):
                 return
 
             else:  # 判断能否吃掉对方棋子
-                # self.checking(self.move_start, [row, col])
+                print(self.selected, coord_cur)
+                if not self.selected:
+                    return
+
                 path = self.search_way(self.selected, coord_cur)
                 print('path=', path)
                 self.strike_foes(self.selected, coord_cur)
 
                 # 不能吃则忽略操作，并清除当前项
+                self._flush_chess()
                 # # 能吃就取代
 
             self.lot += 1
@@ -1367,15 +1379,16 @@ class LandBattleChess(QtWidgets.QWidget):
             return path
 
         style, neighbours, _ = self.board[coord_start[0]][coord_start[1]]  # 进攻方棋子或选中的棋子
-
+        # self.log.debug(style, neighbours)
         # 通达性检核
         if coord_end in neighbours:  # 首先都在邻居里搜寻，不在则不可通达，返回
             path.extend([coord_start, coord_end])
         else:
             print('不是邻居关系。', coord_start, coord_end)
             if style == 1:  # 如果是铁路兵站，扩展的通达性
-                path = self.aStar.get_path(self.board, coord_start, coord_end)
-                print('铁路最短路径:', path)
+                path.extend(self._search_railway(coord_start, coord_end))
+                # path = self.aStar.get_path(self.board, coord_start, coord_end)
+                print('铁路路径:', path)
 
         return path
 
@@ -1482,52 +1495,104 @@ class LandBattleChess(QtWidgets.QWidget):
         # 棋子红框处理和坐标更新
         self._flush_chess(coord_end, coord_start)
 
-    # def _search_railway(self, row, col):
-    #     self.enemies[1].clear()
-    #
-    #     st, neighbours, _ = self.board[row][col]
-    #     if st != 1 or not neighbours:  # 非铁路
-    #         return
-    #
-    #     chess = self.board[row][col][2]
-    #     info = chess.get_info()
-    #     if info[-1] == '工兵':  # 满铁路可走，所有铁路兵站
-    #         for r in range(12):
-    #             for c in range(5):
-    #                 if self.board[r][c][0] == 1:  # 所有铁路站点
-    #                     self.enemies[1].append([r, c])
-    #     else:
-    #         # 横竖都有路
-    #         if [row, col] in [[1, 0], [1, 4], [5, 0], [5, 2], [5, 4], [6, 0], [6, 2], [6, 4], [10, 0], [10, 4]]:
-    #             for i in range(5):
-    #                 if i != col:  # 本身除外
-    #                     self.enemies[1].append([row, i])  # 横线都加上
-    #
-    #             if col == 2:  # 中间2站点
-    #                 r = 5 if row == 6 else 6
-    #                 self.enemies[1].append([r, 2])  # 竖线仅一点要加上
-    #             else:  # 边线上的点
-    #                 for i in range(1, 11):
-    #                     if i != row:  # 本身除外
-    #                         self.enemies[1].append([i, col])  # 竖线点都要加上
-    #
-    #         else:  # 要么横向要么竖向
-    #             for each in neighbours:
-    #                 st, nb, _ = self.board[each[0]][each[1]]
-    #                 if st != 1:  # 不是铁路邻居
-    #                     continue
-    #                 if each[0] == row:  # 横向铁路线上搜索
-    #                     for i in range(5):
-    #                         if i != col:  # 本身除外
-    #                             self.enemies[1].append([row, i])
-    #                 else:  # 纵向铁路线上搜索
-    #                     for i in range(1, 11):
-    #                         if i != row:  # 本身除外
-    #                             self.enemies[1].append([i, col])
-    #                 break
-    #
-    #     self.log.debug(f'站点[{row, col}]：', self.enemies[1])
-    #
+    # 获得铁路上的通行性
+    def _search_railway(self, coord_attacker, coord_defender):
+        """
+        铁路兵站上的可通行性
+        @param coord_attacker: 进攻方行列号
+        @param coord_defender: 防守方行列号
+        @return: path,通行路径上的所有兵站，不通为空
+        """
+
+        if self._invalid_coord(coord_attacker) or \
+                self._invalid_coord(coord_defender) or \
+                coord_attacker == coord_defender:
+            return []
+
+        node_a = self.board[coord_attacker[0]][coord_attacker[1]]
+        node_d = self.board[coord_defender[0]][coord_defender[1]]
+
+        if not node_a[2] or node_a[0] != 1:  # 没有棋子 or 非铁路兵站
+            return []
+
+        # 邻居关系已经在父函数里处理过了，这里不会出现
+        if node_d[0] == 1 and coord_defender in node_a[1]:
+            return [coord_attacker, coord_defender]  # 直接是铁路上的好邻居
+
+        if node_a[2].get_info()[-1] == '工兵':  # 满铁路可走，所有铁路兵站
+            path = self.aStar.get_path(self.board, coord_attacker, coord_defender)
+            print('工兵的铁路最短路径:', path)
+            return path
+            # for r in range(12):
+            #     for c in range(5):
+            #         if self.board[r][c][0] == 1:  # 所有铁路站点
+            #             self.enemies[1].append([r, c])
+
+        else:  # 不是工兵，不能拐弯
+            # 在铁路上的8个拐角点上，则横竖都是通行的路
+            # if coord_attacker in [[1, 0], [1, 4], [5, 0], [5, 4], [6, 0], [6, 4], [10, 0], [10, 4]]:
+            row_a, row_d = coord_attacker[0], coord_defender[0]
+            col_a, col_d = coord_attacker[1], coord_defender[1]
+            path = [coord_attacker]
+
+            if row_a == row_d:  # 同在横线上
+                step = 1 if row_d - row_a > 0 else -1
+                for i in range(row_a + step, row_d, step):  # 因为肯定不是邻居，差肯定大于1
+                    if self.board[row_a][i][2]:  # 有棋子，不通行
+                        return []
+                    else:
+                        path.append([row_a, i])
+
+                path.append(coord_defender)
+                return path  # 两兵站之间没有棋子，可以直达
+
+            elif col_a == col_d:  # 同在纵线上
+                step = 1 if col_d - col_a > 0 else -1
+                for i in range(col_a + step, col_d, step):  # 因为肯定不是邻居，差肯定大于1
+                    if self.board[i][col_a][2]:  # 有棋子，不通行
+                        return []
+                    else:
+                        path.append([i, col_a])
+
+                path.append(coord_defender)
+                return path  # 两兵站之间没有棋子，可以直达
+
+            else:  # 防守方肯定不在铁路线上
+                return []
+
+            # for i in range(5):
+            #     if i != col:  # 本身除外
+            #         self.enemies[1].append([row, i])  # 横线都加上
+            #
+            # if col == 2:  # 中间2站点
+            #     r = 5 if row == 6 else 6
+            #     self.enemies[1].append([r, 2])  # 竖线仅一点要加上
+            # else:  # 边线上的点
+            #     for i in range(1, 11):
+            #         if i != row:  # 本身除外
+            #             self.enemies[1].append([i, col])  # 竖线点都要加上
+
+        # else:  # 要么横向要么竖向
+        #     for each in neighbours:
+        #         st, nb, _ = self.board[each[0]][each[1]]
+        #         if st != 1:  # 不是铁路邻居
+        #             continue
+        #         if each[0] == row:  # 横向铁路线上搜索
+        #             for i in range(5):
+        #                 if i != col:  # 本身除外
+        #                     self.enemies[1].append([row, i])
+        #         else:  # 纵向铁路线上搜索
+        #             for i in range(1, 11):
+        #                 if i != row:  # 本身除外
+        #                     self.enemies[1].append([i, col])
+        #         break
+        #
+        #     return True if coord_attacker in [[5, 2], [6, 2]] and \
+        #                    coord_defender in [[5, 2], [6, 2]] \
+        #         else False  # 中间两兵站，互为邻居，额外加上一个
+
+        self.log.debug(f'站点 ：{coord_attacker}')
+
     # def _find_enemies(self, row, col):
     #     self.enemies[0].clear()
     #     st, neighbours, _ = self.board[row][col]
