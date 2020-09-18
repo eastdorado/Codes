@@ -1113,6 +1113,7 @@ class LandBattleChess(QtWidgets.QWidget):
                 # 不能吃则忽略操作，并清除当前项
                 self._flush_chess()
                 # # 能吃就取代
+                return
 
             self.lot += 1
             self.call_ai()  # 呼叫 AI 走棋
