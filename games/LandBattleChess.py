@@ -81,7 +81,7 @@ class Chess(QtWidgets.QFrame):
 
     def update_me(self, coord=None, style_fm=3, hidden=False):
         self.is_hide = hidden  # 默认是明牌
-        self.coord = coord if coord else self.coord
+        self.coord = copy.deepcopy(coord) if coord else self.coord
         # 3 red  4 blue； 其他任意是原色，隐藏就是背面
         self._style_fm = style_fm if style_fm in [3, 4] else \
             0 if self.is_hide else (self.ID // 12) + 1  # 默认是红色内框
@@ -423,7 +423,7 @@ class AStarRoute(object):
 
     # 序号变行列号
     def sid2coord(self, sid):
-        return sid // self.map2d_w, sid % self.map2d_w
+        return [sid // self.map2d_w, sid % self.map2d_w]
 
     # 行列号变序号
     def coord2sid(self, coord):
@@ -666,7 +666,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.last = None  # 最终落下的棋子位置，棋子红框用，或翻牌的棋子位置
         self.selected = None  # 鼠标选中的我方棋子
         self.rect_blue = None  # 窗口蓝框
-        self.rect_red = None  # 窗口红框
+        self.rect_red = []  # 窗口红框,可能两个
         # endregion
 
         self._init_board()
@@ -852,7 +852,7 @@ class LandBattleChess(QtWidgets.QWidget):
                     self.margin + self.half_w + 2 * (self.chess_w + self.space_w),
                     self.margin + self.half_h + self.front + 6 * (self.chess_h + self.space_h))
 
-    def _flush_frame(self, qp: QtGui.QPainter):
+    def _draw_box(self, qp: QtGui.QPainter):
         # 在空的兵站上画蓝框或者红框，置零就是擦除蓝红框
         w_line = 6
         if self.rect_blue:
@@ -869,38 +869,65 @@ class LandBattleChess(QtWidgets.QWidget):
             # qp.drawLine(self.rect_blue.bottomLeft(), self.rect_blue.bottomRight())
             # qp.drawLine(self.rect_blue.topRight(), self.rect_blue.bottomRight())
 
-        if self.rect_red:
+        for each in self.rect_red:
             qp.setPen(QtGui.QPen(QtGui.QColor(255, 0, 0), w_line, QtCore.Qt.SolidLine))
             qp.setBrush(QtGui.QBrush())  # 空画刷，就是透明
-            qp.drawRoundedRect(self.rect_red, 5.0, 5.0)
+            qp.drawRoundedRect(each, 5.0, 5.0)
 
-    def _flush_chess(self, coord_last=None, coord_pre=None):
-        if coord_last:
-            # 擦除过时红框
-            chess = self.board[self.last[0]][self.last[1]][2]
-            if chess:
-                chess.update_me(None, 0)
+    def _flush_box(self, coord_last=None, coord_shadow=None, coord_blue=None):
+        """ 红框易位(可选)，附近红框也可以设置；蓝框消失(必然)
+        @param coord_last: 新红框的坐标
+        @param coord_shadow: 红框的附框坐标，也就是 start，自动擦除旧的，有没有新框看赋值
+        @param coord_blue: 新蓝框的位置
+        """
 
-            # 迎接新红框
-            self.last = coord_last
-            chess = self.board[self.last[0]][self.last[1]][2]
-            if chess:
-                chess.update_me(coord_last)  # 红框并更新
-
-            if coord_pre:
-                x, y = self.get_pos(coord_pre)
-                self.rect_red = QtCore.QRect(x + 3, y + 3, self.chess_w - 3, self.chess_h - 3)
-            else:
-                self.rect_red = None  # 清除窗口红框
-            self.update()  # start位置也画红框
-
-        # 擦除无用的蓝框并归零，但是
-        # 机器翻出我方棋子又被选中则是蓝框,与last红框重合,需要继续显示
-        if self.selected and self.selected != self.last:
+        # region 处理蓝框
+        # print('旧蓝框:', self.selected, '    红框:', self.last, '    新蓝框:', coord_blue)
+        if self.selected:  # 首先无条件擦除旧蓝框并归零
             chess = self.board[self.selected[0]][self.selected[1]][2]
             if chess:
-                chess.update_me(None, 0)
-            self.selected = None
+                if self.selected == self.last:  # 机器翻出我方棋子又被选中,需要恢复红框
+                    chess.update_me()  # 默认红框
+                else:
+                    chess.update_me(None, 0)  # 清除蓝框
+        self.selected = None
+
+        if coord_blue:  # 需要则画上新蓝框
+            chess = self.board[coord_blue[0]][coord_blue[1]][2]
+            if chess:
+                chess.update_me(style_fm=4)  # 蓝框
+
+            self.selected = copy.deepcopy(coord_blue)
+        # endregion
+
+        if coord_last:
+            self.rect_red.clear()
+
+            # region 处理影子红框
+            if coord_shadow:  # 新位置画红框，替代了旧的附框
+                x, y = self.get_pos(coord_shadow)
+                self.rect_red.append(QtCore.QRect(x + 3, y + 3, self.chess_w - 3, self.chess_h - 3))
+            else:  # 翻棋时则不需要影子，旧的附框自动被清除
+                ...  # 清除窗口红框
+
+            self.update()  # start位置也画红框
+            # endregion
+
+            if self.last:  # 擦除过时红框
+                chess = self.board[self.last[0]][self.last[1]][2]
+                if chess:  # 有棋子，说明是移动棋子
+                    chess.update_me(style_fm=0)
+                else:  # 说明前面双方同归于尽了，没有棋子了，则窗口里自动擦除：rect——red清零即可以
+                    ...
+
+            chess = self.board[coord_last[0]][coord_last[1]][2]  # 迎接新红框
+            if chess:
+                chess.update_me(coord_last)  # 红框并更新
+            else:  # 没有棋子说明双方也同归于尽了，则窗口里画框
+                x, y = self.get_pos(coord_last)
+                self.rect_red.append(QtCore.QRect(x + 3, y + 3, self.chess_w - 3, self.chess_h - 3))
+
+            self.last = copy.deepcopy(coord_last)  # 换位
 
     # endregion
 
@@ -980,7 +1007,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self._draw_railway(qp, QtGui.QPen(QtGui.QColor(255, 255, 255), 5, QtCore.Qt.DotLine))
 
         self._draw_sites(qp)  # 棋子位置
-        self._flush_frame(qp)  # 画蓝红框
+        self._draw_box(qp)  # 画蓝红框
 
         # region 测试
         # # self.log.debug(self.enemies)
@@ -1047,7 +1074,7 @@ class LandBattleChess(QtWidgets.QWidget):
             chess.update_me(None, 0, hidden)  # 擦除蓝框
             self.tmp = None
 
-        if self.last and self.last != self.selected:  # 不擦除蓝框，别的无条件显示红框
+        if self.last:  # 无条件显示红框
             chess = self.board[self.last[0]][self.last[1]][2]
             chess.update_me()  # 红框，采用默认值即可
 
@@ -1071,7 +1098,7 @@ class LandBattleChess(QtWidgets.QWidget):
             # self.log.debug(self.selected, coord_cur, path)
             # 路径不通，选中棋子不能移动到当前位置处，或者选中的是地雷、军旗，也不能移动
             if not path or node_sel[2].get_info()[3] in ['地雷', '军旗']:
-                self._flush_chess()
+                self._flush_box()
                 return  # 需要重新选中棋子
 
             else:  # 能移动
@@ -1090,15 +1117,13 @@ class LandBattleChess(QtWidgets.QWidget):
                 self.dark_room.pop(self.dark_room.index(row * 5 + col))  # 明牌弹出小黑屋
 
             elif info_cur[2]:  # 暗棋需要翻转
-                self._flush_chess(coord_cur)  # 红蓝框
+                self._flush_box(coord_cur)  # 红蓝框
                 # 明牌弹出小黑屋
                 self.dark_room.pop(self.dark_room.index(self.aStar.coord2sid(coord_cur)))
 
             elif info_cur[0] // 12 == self.setting[2]:  # 点击的棋子是玩家的
                 # print(f'点击了我方{rank}', coord, [row, col])
-                self._flush_chess()  # 清除过时蓝框
-                self.selected = coord_cur  # 当前点击一定是蓝的，可以覆盖红框，红框下次自动显示
-                node_cur[2].update_me(coord_cur, 4)  # 蓝框
+                self._flush_box(coord_blue=coord_cur)  # 当前点击一定是蓝的，清除过时蓝框
                 return
 
             else:  # 判断能否吃掉对方棋子
@@ -1111,7 +1136,7 @@ class LandBattleChess(QtWidgets.QWidget):
                 self.strike_foes(self.selected, coord_cur)
 
                 # 不能吃则忽略操作，并清除当前项
-                self._flush_chess()
+                self._flush_box()
                 # # 能吃就取代
                 return
 
@@ -1234,9 +1259,9 @@ class LandBattleChess(QtWidgets.QWidget):
         if self.dark_room:  # 还有暗棋，可以翻开
             index = Utils.rand_int(0, len(self.dark_room) - 1)
             # 明牌弹出小黑屋，切换到当前翻出的位置
-            self.last = self.aStar.sid2coord(self.dark_room.pop(index))
+            coord_cur = self.aStar.sid2coord(self.dark_room.pop(index))
             # print(self.last, index, self.dark_room)
-            self._flush_chess(self.last)
+            self._flush_box(coord_cur)
 
             self.lot += 1
 
@@ -1364,7 +1389,6 @@ class LandBattleChess(QtWidgets.QWidget):
         return ret
 
     # 先路径检测，再战斗检测，最后可能移动
-
     # 纯粹的路径连通性，含有棋子障碍物的情况
     def search_way(self, coord_start, coord_end):
         """
@@ -1494,7 +1518,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[coord_start[0]][coord_start[1]][2] = None
 
         # 棋子红框处理和坐标更新
-        self._flush_chess(coord_end, coord_start)
+        self._flush_box(coord_end, coord_start)
 
     # 获得铁路上的通行性
     def _search_railway(self, coord_attacker, coord_defender):
