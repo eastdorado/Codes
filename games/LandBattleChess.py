@@ -5,6 +5,7 @@ import sys
 import random
 import os
 import copy
+import time
 from functools import partial
 from PyQt5 import QtWidgets, QtGui, QtCore
 from utilities import Utils, MyLog, BitMark
@@ -671,7 +672,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
         self._init_board()
 
-    # region 界面及数据的初始化函数区
+    # region 数据的初始化及界面区
     def _init_board(self):
         # region 站点的属性设置
 
@@ -720,7 +721,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.setting[0] = 1  # 玩家先手，0 ai先手   me_first = False
         self.setting[1] = 1  # 大本营不吃子  base_camp = False
         self.setting[2] = 1  # 玩家阵营  0是红方,1是蓝方
-        self.setting[3] = 0  # 移动动画
+        self.setting[3] = 1  # 移动动画
 
         self.setting[8] = 0  # 已经开局
         # endregion
@@ -747,7 +748,6 @@ class LandBattleChess(QtWidgets.QWidget):
 
         for row in range(12):
             for col in range(5):
-
                 # if self.board[row][col][0] == 1:  # 铁路站点
                 #     tmp.append([row, col])
 
@@ -758,8 +758,9 @@ class LandBattleChess(QtWidgets.QWidget):
                             continue
                         if i == 0 and j == 0:  # 自己
                             continue
-                        if i * j != 0 and self.board[row + i][col + j][0] != 3:  # 对角不是行营
-                            # print(i, j, self.board[row + i][col + j][0])
+                        # 本身不是行营，对角也不是行营
+                        if self.board[row][col][0] != 3 and i * j != 0 and \
+                                self.board[row + i][col + j][0] != 3:
                             continue
 
                         neighbours.append([row + i, col + j])
@@ -772,7 +773,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[5][3][1].pop(self.board[5][3][1].index([6, 3]))
         self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
         self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
-        # self.log.debug(f'地图：{len(self.board)}个', self.board[5][4])
+        self.log.debug(f'地图：{len(self.board[2][3][1])}个', self.board[2][3][1])
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -922,7 +923,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
             chess = self.board[coord_last[0]][coord_last[1]][2]  # 迎接新红框
             if chess:
-                chess.update_me(coord_last)  # 红框并更新
+                chess.update_me(coord_last)  # 红框并更新，一定要更新
             else:  # 没有棋子说明双方也同归于尽了，则窗口里画框
                 x, y = self.get_pos(coord_last)
                 self.rect_red.append(QtCore.QRect(x + 3, y + 3, self.chess_w - 3, self.chess_h - 3))
@@ -932,6 +933,7 @@ class LandBattleChess(QtWidgets.QWidget):
     # endregion
 
     # region 消息槽区
+
     def paintEvent(self, e: QtGui.QPaintEvent) -> None:
         qp = QtGui.QPainter()
         qp.begin(self)
@@ -1076,72 +1078,75 @@ class LandBattleChess(QtWidgets.QWidget):
 
         if self.last:  # 无条件显示红框
             chess = self.board[self.last[0]][self.last[1]][2]
-            chess.update_me()  # 红框，采用默认值即可
+            if chess:
+                chess.update_me()  # 红框，采用默认值即可
 
         # endregion
 
         ret = self.get_coord(e.pos())
         if ret is None:
             return
-        row, col, dx, dy = ret
 
+        # region 处理有效点击事件
+        row, col, dx, dy = ret
         node_cur = self.board[row][col]  # 当前站点数据
         coord_cur = [row, col]  # 当前站点坐标
 
-        # 处理有效点击事件
-        if node_cur[2] is None:  # 点击了空白位置，还要判断当前棋子能否移动到这个位置
+        # 点击了空白位置，还要判断当前棋子能否移动到这个位置
+        if node_cur[2] is None:
             if not self.selected:  # 没有选中棋子，不能移动到空白处
                 return
 
             node_sel = self.board[self.selected[0]][self.selected[1]]
             path = self.search_way(self.selected, coord_cur)  # 判断上次选中棋子能否移动到当前位置
             # self.log.debug(self.selected, coord_cur, path)
+
             # 路径不通，选中棋子不能移动到当前位置处，或者选中的是地雷、军旗，也不能移动
             if not path or node_sel[2].get_info()[3] in ['地雷', '军旗']:
                 self._flush_box()
                 return  # 需要重新选中棋子
 
-            else:  # 能移动
+            # 能移动
+            else:
                 self.move_chess(self.selected, coord_cur, path)  # 则首先移动选中的棋子
-                self.call_ai()  # 呼叫 AI 走棋
 
-        else:  # 点中了棋子
+        # 点中了棋子
+        else:
             info_cur = node_cur[2].get_info()
             # print(ID, coord, hide, rank)
 
-            if self.last is None:  # 第一次点暗棋，如机器先手，则不会执行到这步
+            # 第一次点暗棋，如机器先手，则不会执行到这步
+            if self.last is None:
                 self.last = coord_cur  # coord
                 self.setting[2] = info_cur[0] // 12  # 选择玩家阵营
                 node_cur[2].update_me()  # 红框，采用默认值即可
                 # print("我是蓝方" if self.me else '我是红方')
                 self.dark_room.pop(self.dark_room.index(row * 5 + col))  # 明牌弹出小黑屋
+                self.call_ai()  # 呼叫 AI 走棋
 
-            elif info_cur[2]:  # 暗棋需要翻转
+            # 暗棋需要翻转
+            elif info_cur[2]:
                 self._flush_box(coord_cur)  # 红蓝框
                 # 明牌弹出小黑屋
                 self.dark_room.pop(self.dark_room.index(self.aStar.coord2sid(coord_cur)))
+                self.call_ai()  # 呼叫 AI 走棋
 
-            elif info_cur[0] // 12 == self.setting[2]:  # 点击的棋子是玩家的
+            # 点击的棋子是玩家的
+            elif info_cur[0] // 12 == self.setting[2]:
                 # print(f'点击了我方{rank}', coord, [row, col])
                 self._flush_box(coord_blue=coord_cur)  # 当前点击一定是蓝的，清除过时蓝框
-                return
 
-            else:  # 判断能否吃掉对方棋子
-                print(self.selected, coord_cur)
+            # 判断能否吃掉对方棋子
+            else:
                 if not self.selected:
                     return
 
                 path = self.search_way(self.selected, coord_cur)
-                print('path=', path)
-                self.strike_foes(self.selected, coord_cur)
+                # 路径不通，不能战斗；或者战斗出现异常，则忽略操作，并清除当前项
+                if not path or not self.strike_foes(self.selected, coord_cur, path):
+                    self._flush_box()
 
-                # 不能吃则忽略操作，并清除当前项
-                self._flush_box()
-                # # 能吃就取代
-                return
-
-            self.lot += 1
-            self.call_ai()  # 呼叫 AI 走棋
+        # endregion
 
     def slot_pb_clicked(self, ctl):
         """
@@ -1252,6 +1257,7 @@ class LandBattleChess(QtWidgets.QWidget):
         # 电脑走起
         self._ai_open_chess()
         # 吃棋
+        self.lot += 1
 
     # AI 翻棋
     def _ai_open_chess(self):
@@ -1262,8 +1268,6 @@ class LandBattleChess(QtWidgets.QWidget):
             coord_cur = self.aStar.sid2coord(self.dark_room.pop(index))
             # print(self.last, index, self.dark_room)
             self._flush_box(coord_cur)
-
-            self.lot += 1
 
     def victory(self):
         if '红旗' not in self.bastion:
@@ -1328,198 +1332,6 @@ class LandBattleChess(QtWidgets.QWidget):
 
         return x, y
 
-    # 裁判   =0：同归于尽  <0：失败  >0：胜利 -2:异常
-    def judge(self, id_attacker: int, id_defender: int) -> int:
-        """
-        战斗胜负判断
-        @param id_attacker: 攻击方棋子的 id
-        @param id_defender: 防守方棋子的 id
-        @return: 类型码 0：同归于尽  <0：失败  >0：胜利 -2-3-4:异常
-        """
-        if not 0 <= id_attacker < 24 or not 0 <= id_defender < 24:
-            return -3  # 异常
-
-        if (id_attacker < 12 and id_defender < 12) or \
-                (id_attacker > 11 and id_defender > 11):
-            return -2  # 同伴
-
-        ret = -4
-        a = id_attacker % 12  # 进攻方
-        d = id_defender % 12  # 防守方
-
-        if a < 9 and d < 9:
-            ret = d - a  # 越小军衔越大
-
-        if a is Chess.ORDER.index('军旗'):
-            return -1
-
-        if d is Chess.ORDER.index('军旗'):  # 比炸弹优先，炸弹炸不了
-            if a == Chess.ORDER.index('工兵'):
-                if id_attacker < 12:
-                    if '蓝雷' not in self.bastion:  # 蓝方地雷已光
-                        self.bastion.pop(self.bastion.index('蓝旗'))  # 可以夺去蓝方军旗
-                        ret = 1
-                    else:
-                        ret = -1
-                else:
-                    if '红雷' not in self.bastion:  # 红方地雷已光
-                        self.bastion.pop(self.bastion.index('红旗'))  # 可以夺去蓝方军旗
-                        ret = 1
-                    else:
-                        ret = -1
-            else:
-                ret = -1
-
-        elif a == Chess.ORDER.index('炸弹') or d == Chess.ORDER.index('炸弹'):  # 比地雷优先
-            ret = 0
-
-        elif a is Chess.ORDER.index('地雷'):
-            return -1
-
-        elif d is Chess.ORDER.index('地雷'):
-            if a == Chess.ORDER.index('工兵'):
-                if id_attacker < 12:  # red
-                    self.bastion.pop(self.bastion.index('蓝雷'))  # 蓝方地雷 -1
-                else:
-                    self.bastion.pop(self.bastion.index('红雷'))  # 弹出红方地雷， -1
-                ret = 1
-            else:
-                ret = -1
-
-        return ret
-
-    # 先路径检测，再战斗检测，最后可能移动
-    # 纯粹的路径连通性，含有棋子障碍物的情况
-    def search_way(self, coord_start, coord_end):
-        """
-        纯粹的路径连通性检测，不涉及棋子判断
-        @param coord_start:
-        @param coord_end:
-        @return: 路径点的列表，空列表代表不连通
-        """
-
-        path = []
-        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
-            print('坐标不合法')
-            return path
-
-        style, neighbours, _ = self.board[coord_start[0]][coord_start[1]]  # 进攻方棋子或选中的棋子
-        # self.log.debug(style, neighbours)
-        # 通达性检核
-        if coord_end in neighbours:  # 首先都在邻居里搜寻，不在则不可通达，返回
-            path.extend([coord_start, coord_end])
-        else:
-            print('不是邻居关系。', coord_start, coord_end)
-            if style == 1:  # 如果是铁路兵站，扩展的通达性
-                path.extend(self._search_railway(coord_start, coord_end))
-                # path = self.aStar.get_path(self.board, coord_start, coord_end)
-                print('铁路路径:', path)
-
-        return path
-
-    # 搏斗
-    def strike_foes(self, coord_start, coord_end):
-        """ 处理吃棋，必须是两个棋子
-        @param coord_start:
-        @param coord_end:
-        @return:
-        """
-
-        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
-            print('坐标不合法')
-            return
-
-        node_s = self.board[coord_start[0]][coord_start[1]]  # 进攻方棋子或选中的棋子
-        node_e = self.board[coord_end[0]][coord_end[1]]  # 防守方棋子或前进的位置
-
-        if node_e[0] == 3:  # 对方在行营里，不可战斗，除非最后
-            print('对方在行营 line camp 里')
-            return
-
-        if node_e[0] == 4:  # 对方在大本营里，不可战斗，除非最后或者容许
-            if not self.setting[1]:  # 不容许吃大本营里的子
-                print('敌人在大本营 base camp 里')
-            return
-
-        if node_s[2] is None or node_e[2] is None:  # 必须有棋子
-            print('站上无人')
-            return
-
-        # 可以搏斗了
-        info_s = node_s[2].get_info()  # 棋子的信息
-        info_e = node_e[2].get_info()
-
-        result = self.judge(info_s[0], info_e[0])
-        print(result)
-        if result < 0:  # 按兵不动
-            print('打不动，罢兵。')
-            return
-
-        # 根据结果，呼叫移动棋子
-
-    def anti(self, chess, path):
-        # 棋子移动动画
-        if not chess or not path:
-            return
-
-        # railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [2, 0], [2, 4], [3, 0], [3, 4],
-        #            [4, 0], [4, 4], [5, 0], [5, 1], [5, 2], [5, 3], [5, 4],
-        #            [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [7, 0], [7, 4], [8, 0], [8, 4],
-        #            [9, 0], [9, 4], [10, 0], [10, 1], [10, 2], [10, 3], [10, 4]]
-        # path = []
-        # for each in railway:
-        #     x, y = self._pos(each)
-        #     path.append(QtCore.QPoint(x, y))
-
-        # 动画设置
-
-        animation = QtCore.QPropertyAnimation(chess, b"pos", self)
-        length = len(path)
-        delay = 1 / length
-        for i in range(length):
-            animation.setKeyValueAt(i * delay, path[i])
-
-        animation.setDuration(250 * length)
-        # animation.setLoopCount(3)
-        # animation.setEasingCurve(QEasingCurve.OutBounce)  # setEasingCurve动画曲线
-        animation.start()
-
-    def move_chess(self, coord_start, coord_end, path=[]):
-        """
-            起始节点，铁路移动路径
-        """
-
-        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
-            print('坐标不合法')
-            return
-
-        chess = self.board[coord_start[0]][coord_start[1]][2]  # 进攻方棋子或选中的棋子
-        if not chess:
-            return
-
-        x1, y1 = self.get_pos(coord_start)
-        x2, y2 = self.get_pos(coord_end)
-
-        if self.setting[3]:  # 动画
-            if not path:
-                path.append(QtCore.QPoint(x1, y1))
-                path.append(QtCore.QPoint(x2, y2))
-            print(path)
-            # self.anti(chess, path)
-        else:
-            chess.move(x2, y2)
-
-        # 吃子处理，可能在别处处理了
-        chess_e = self.board[coord_end[0]][coord_end[1]][2]
-        if chess_e:
-            chess_e.delete()
-
-        self.board[coord_end[0]][coord_end[1]][2] = chess
-        self.board[coord_start[0]][coord_start[1]][2] = None
-
-        # 棋子红框处理和坐标更新
-        self._flush_box(coord_end, coord_start)
-
     # 获得铁路上的通行性
     def _search_railway(self, coord_attacker, coord_defender):
         """
@@ -1546,12 +1358,8 @@ class LandBattleChess(QtWidgets.QWidget):
 
         if node_a[2].get_info()[-1] == '工兵':  # 满铁路可走，所有铁路兵站
             path = self.aStar.get_path(self.board, coord_attacker, coord_defender)
-            print('工兵的铁路最短路径:', path)
+            self.log.debug('工兵的铁路最短路径:', path)
             return path
-            # for r in range(12):
-            #     for c in range(5):
-            #         if self.board[r][c][0] == 1:  # 所有铁路站点
-            #             self.enemies[1].append([r, c])
 
         else:  # 不是工兵，不能拐弯
             # 在铁路上的8个拐角点上，则横竖都是通行的路
@@ -1617,6 +1425,279 @@ class LandBattleChess(QtWidgets.QWidget):
         #         else False  # 中间两兵站，互为邻居，额外加上一个
 
         self.log.debug(f'站点 ：{coord_attacker}')
+
+    # 先路径检测，再战斗检测，最后可能移动
+    # 纯粹的路径连通性，含有棋子障碍物的情况
+    def search_way(self, coord_start, coord_end):
+        """
+        纯粹的路径连通性检测，不涉及棋子判断
+        @param coord_start:
+        @param coord_end:
+        @return: 路径点的列表，空列表代表不连通
+        """
+
+        path = []
+        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
+            self.log.debug('坐标不合法')
+            return path
+
+        style, neighbours, _ = self.board[coord_start[0]][coord_start[1]]  # 进攻方棋子或选中的棋子
+        # self.log.debug(style, neighbours)
+        # 通达性检核
+        if coord_end in neighbours:  # 首先都在邻居里搜寻，不在则不可通达，返回
+            path.extend([coord_start, coord_end])
+        else:
+            self.log.debug('不是邻居关系。', coord_start, coord_end, neighbours)
+            if style == 1:  # 如果是铁路兵站，扩展的通达性
+                path.extend(self._search_railway(coord_start, coord_end))
+                # path = self.aStar.get_path(self.board, coord_start, coord_end)
+                self.log.debug('铁路路径:', path)
+
+        return path
+
+    # 裁判   =0：同归于尽  <0：失败  >0：胜利 -2-3-4:异常
+    def judge(self, id_attacker: int, id_defender: int) -> int:
+        """
+            战斗胜负判断
+            @param id_attacker: 攻击方棋子的 id
+            @param id_defender: 防守方棋子的 id
+            @return: 类型码 0：同归于尽  <0：失败  >0：胜利 -2-3-4:异常
+            """
+        if not 0 <= id_attacker < 24 or not 0 <= id_defender < 24:
+            self.log.debug('棋子id异常')
+            return -3  # 异常
+
+        if (id_attacker < 12 and id_defender < 12) or \
+                (id_attacker > 11 and id_defender > 11):
+            self.log.debug('自家人火并')
+            return -2  # 同伴
+
+        ret = -4
+        a = id_attacker % 12  # 进攻方
+        d = id_defender % 12  # 防守方
+
+        if a < 9 and d < 9:
+            comp = d - a  # 越小军衔越大
+            self.log.debug(f'军衔差{comp}级')
+            ret = 0 if comp == 0 else 1 if comp>0 else -1
+
+        if a is Chess.ORDER.index('军旗'):
+            self.log.debug('军旗不能进攻')
+            return -1
+
+        if d is Chess.ORDER.index('军旗'):  # 比炸弹优先，炸弹炸不了
+            if a == Chess.ORDER.index('工兵'):
+                if id_attacker < 12:
+                    if '蓝雷' not in self.bastion:  # 蓝方地雷已光
+                        self.bastion.pop(self.bastion.index('蓝旗'))  # 可以夺去蓝方军旗
+                        ret = 1
+                    else:
+                        self.log.debug('先排除蓝方所有地雷')
+                        ret = -1
+                else:
+                    if '红雷' not in self.bastion:  # 红方地雷已光
+                        self.bastion.pop(self.bastion.index('红旗'))  # 可以夺去蓝方军旗
+                        ret = 1
+                    else:
+                        self.log.debug('先排除红方所有地雷')
+                        ret = -1
+            else:
+                self.log.debug('只有工兵才能扛旗')
+                ret = -1
+
+        elif a == Chess.ORDER.index('炸弹') or d == Chess.ORDER.index('炸弹'):  # 比地雷优先
+            ret = 0
+
+        elif a is Chess.ORDER.index('地雷'):
+            self.log.debug('地雷不能进攻')
+            return -1
+
+        elif d is Chess.ORDER.index('地雷'):
+            if a == Chess.ORDER.index('工兵'):
+                if id_attacker < 12:  # red
+                    self.bastion.pop(self.bastion.index('蓝雷'))  # 蓝方地雷 -1
+                else:
+                    self.bastion.pop(self.bastion.index('红雷'))  # 弹出红方地雷， -1
+                ret = 1
+            else:
+                self.log.debug('请用工兵排雷')
+                ret = -1
+
+        return ret
+
+    # 搏斗
+    def strike_foes(self, coord_attacker, coord_defender, path):
+        """ 处理吃棋，必须是两个棋子
+        @param coord_attacker:
+        @param coord_defender:
+        @return:
+        """
+
+        if self._invalid_coord(coord_attacker) or self._invalid_coord(coord_defender):
+            self.log.debug('坐标不合法')
+            return False
+
+        node_a = self.board[coord_attacker[0]][coord_attacker[1]]  # 进攻方棋子或选中的棋子
+        node_d = self.board[coord_defender[0]][coord_defender[1]]  # 防守方棋子或前进的位置
+
+        # 兵站必须有棋子
+        if node_a[2] is None or node_d[2] is None:
+            self.log.debug('站上无人')
+            return False
+
+        # 对方在行营里，不可战斗，除非最后
+        if node_d[0] == 3:
+            self.log.debug('对方在行营 line camp 里')
+            return False
+
+        # 对方在大本营里，且设置为不可战斗
+        if node_d[0] == 4 and not self.setting[1]:
+            self.log.debug('敌人在大本营 base camp 里, 且不容许吃大本营里的子')
+            return False
+
+        # 可以搏斗了
+        info_a = node_a[2].get_info()  # 棋子的信息
+        info_d = node_d[2].get_info()
+
+        result = self.judge(info_a[0], info_d[0])
+
+        if result not in [-1, 0, 1]:
+            return False
+
+        # 打不动，按兵不动
+        elif result == -1:
+            self.log.debug('打不动，罢兵。')
+            return False
+
+        elif result == 0:
+            self.log.debug("同归于尽")
+            self._delete_chess(coord_attacker)
+            self._delete_chess(coord_defender)
+            self._flush_box(coord_attacker, coord_defender)  # 刷两个红框
+            self.call_ai()
+
+        else:
+            self.log.debug('打败了敌人')
+            self.move_chess(coord_attacker, coord_defender, path)  # 移动棋子
+
+        return True
+
+    def anti(self, chess, path):
+        # 棋子移动动画
+        if not chess or not path:
+            self.log.debug('无法动画移动')
+            return
+
+        self.log.debug(chess.get_info()[3], path)
+
+        # 动画设置
+        anim = QtCore.QPropertyAnimation(chess, b"pos", self)
+
+        length = len(path)
+        delay = 1 / length
+        for i in range(length):
+            xy = self.get_pos(path[i])
+            pt = QtCore.QPoint(xy[0], xy[1])
+            # self.log.debug(xy, pt, path[i])
+            anim.setKeyValueAt(i * delay, pt)
+            # anim.setKeyValueAt(i * delay, path[i])
+
+        # anim.setStartValue(path[0])
+        xy = self.get_pos(path[-1])
+        anim.setEndValue(QtCore.QPoint(xy[0], xy[1]))
+
+        anim.setDuration(250 * length)
+        # anim.setLoopCount(3)
+        # anim.setEasingCurve(QtCore.QEasingCurve.OutBounce)  # 设置动画的节奏 动画曲线/InQuad
+
+        anim.finished.connect(self.call_ai)  # 动画完成时
+
+        # 参数 DeleteWhenStopped停止时动画将自动删除；KeepWhenStopped  停止时不会删除动画
+        anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+
+    def antis(self, chess, path):
+        if not chess or not path:
+            self.log.debug('无法动画移动')
+            return
+
+        # 动画1
+        anim1 = QtCore.QPropertyAnimation(chess, b'pos', self)
+        length = len(path)
+        delay = 1 / length
+        for i in range(length):
+            xy = self.get_pos(path[i])
+            pt = QtCore.QPoint(xy[0], xy[1])
+            anim1.setKeyValueAt(i * delay, pt)
+
+        xy = self.get_pos(path[-1])
+        anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
+        anim1.setDuration(250 * length)
+
+
+        # 2的动画
+        anim2 = QtCore.QPropertyAnimation(self.btn2, b'pos', self)
+        anim2.setKeyValueAt(0, QPoint(50, 50))
+        anim2.setKeyValueAt(0.25, QPoint(400, 50))
+        anim2.setKeyValueAt(0.5, QPoint(400, 400))
+        anim2.setKeyValueAt(0.75, QPoint(50, 400))
+        anim2.setKeyValueAt(1, QPoint(50, 50))
+        anim2.setDuration(3000)
+        # animation2.start()
+
+        anim_group = QtCore.QSequentialAnimationGroup(self)
+        anim_group.addAnimation(animation1)
+        anim_group.addAnimation(animation2)
+        anim_group.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+
+    def _delete_chess(self, coord):
+        # 删除被吃的棋子
+
+        if self._invalid_coord(coord):
+            self.log.debug('坐标不合法')
+            return
+
+        chess = self.board[coord[0]][coord[1]][2]
+        if chess:
+            chess.delete()
+
+        self.board[coord[0]][coord[1]][2] = None
+
+    def move_chess(self, coord_start, coord_end, path=[]):
+        """
+            移动棋子，无条件删除后一个棋子
+            @param coord_start: 起始节点
+            @param coord_end: 终结点
+            @param path: 铁路移动路径
+            @return:
+        """
+
+        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
+            self.log.debug('坐标不合法')
+            return
+
+        chess = self.board[coord_start[0]][coord_start[1]][2]  # 进攻方棋子或选中的棋子
+        if not chess:
+            self.log.debug('进攻方无棋子')
+            return
+
+        self._delete_chess(coord_end)  # 删除被吃的棋子
+        self.board[coord_end[0]][coord_end[1]][2] = chess
+        self.board[coord_start[0]][coord_start[1]][2] = None
+
+        # 移动棋子
+        if self.setting[3]:  # 动画
+            if not path:
+                path.append(coord_start)
+                path.append(coord_end)
+
+            self.anti(chess, path)
+            self._flush_box(coord_end, coord_start)  # 棋子红框处理和坐标更新
+
+        else:
+            x, y = self.get_pos(coord_end)
+            chess.move(x, y)
+            self._flush_box(coord_end, coord_start)  # 棋子红框处理和坐标更新
+            self.call_ai()  # 呼叫 AI 走棋
 
     # def _find_enemies(self, row, col):
     #     self.enemies[0].clear()

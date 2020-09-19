@@ -2036,7 +2036,7 @@ class MyLog(object):
         # sf.f_code.co_name  # 调用函数名称
         # sf.f_lineno  # 调用处行号
 
-        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}\n'
+        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}'
 
         if self.flag < 2:
             with open(f'{self.log_path}/{self.log_file}', 'a') as f:
