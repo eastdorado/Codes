@@ -773,7 +773,7 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[5][3][1].pop(self.board[5][3][1].index([6, 3]))
         self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
         self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
-        self.log.debug(f'地图：{len(self.board[2][3][1])}个', self.board[2][3][1])
+        # self.log.debug(f'地图：{len(self.board[2][3][1])}个', self.board[2][3][1])
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -1108,7 +1108,7 @@ class LandBattleChess(QtWidgets.QWidget):
 
             # 能移动
             else:
-                self.move_chess(self.selected, coord_cur, path)  # 则首先移动选中的棋子
+                self.move_chess(self.selected, coord_cur, path, 2)  # 则首先移动选中的棋子
 
         # 点中了棋子
         else:
@@ -1126,6 +1126,10 @@ class LandBattleChess(QtWidgets.QWidget):
 
             # 暗棋需要翻转
             elif info_cur[2]:
+                if self.selected:  # 属于误操作，无效
+                    self._flush_box()  # 红蓝框
+                    return
+
                 self._flush_box(coord_cur)  # 红蓝框
                 # 明牌弹出小黑屋
                 self.dark_room.pop(self.dark_room.index(self.aStar.coord2sid(coord_cur)))
@@ -1134,7 +1138,10 @@ class LandBattleChess(QtWidgets.QWidget):
             # 点击的棋子是玩家的
             elif info_cur[0] // 12 == self.setting[2]:
                 # print(f'点击了我方{rank}', coord, [row, col])
-                self._flush_box(coord_blue=coord_cur)  # 当前点击一定是蓝的，清除过时蓝框
+                if coord_cur == self.selected:  # 实现选中与取消的切换，蓝框的间隔出现
+                    self._flush_box()
+                else:
+                    self._flush_box(coord_blue=coord_cur)  # 当前点击一定是蓝的，清除过时蓝框
 
             # 判断能否吃掉对方棋子
             else:
@@ -1320,8 +1327,8 @@ class LandBattleChess(QtWidgets.QWidget):
         @param coord: 行列号列表
         @return: x,y 左上角
         """
-        if self._invalid_coord(coord):
-            return None
+        # if self._invalid_coord(coord):
+        #     return None
 
         x = self.margin + coord[1] * (self.chess_w + self.space_w)  # 棋子的左边界
         y = self.margin + coord[0] * (self.chess_h + self.space_h)  # 棋子的上边界
@@ -1479,7 +1486,7 @@ class LandBattleChess(QtWidgets.QWidget):
         if a < 9 and d < 9:
             comp = d - a  # 越小军衔越大
             self.log.debug(f'军衔差{comp}级')
-            ret = 0 if comp == 0 else 1 if comp>0 else -1
+            ret = 0 if comp == 0 else 1 if comp > 0 else -1
 
         if a is Chess.ORDER.index('军旗'):
             self.log.debug('军旗不能进攻')
@@ -1528,6 +1535,7 @@ class LandBattleChess(QtWidgets.QWidget):
     # 搏斗
     def strike_foes(self, coord_attacker, coord_defender, path):
         """ 处理吃棋，必须是两个棋子
+        @param path:
         @param coord_attacker:
         @param coord_defender:
         @return:
@@ -1569,134 +1577,167 @@ class LandBattleChess(QtWidgets.QWidget):
             self.log.debug('打不动，罢兵。')
             return False
 
-        elif result == 0:
-            self.log.debug("同归于尽")
-            self._delete_chess(coord_attacker)
-            self._delete_chess(coord_defender)
-            self._flush_box(coord_attacker, coord_defender)  # 刷两个红框
-            self.call_ai()
-
-        else:
-            self.log.debug('打败了敌人')
-            self.move_chess(coord_attacker, coord_defender, path)  # 移动棋子
+        self.move_chess(coord_attacker, coord_defender, path, result)  # 移动棋子
+        # elif result == 0:
+        # #     self.log.debug("同归于尽")
+        # #     self._delete_chess(coord_attacker)
+        # #     self._delete_chess(coord_defender)
+        # #     self._flush_box(coord_attacker, coord_defender)  # 刷两个红框
+        # #     self.call_ai()
+        #
+        # else:
+        #     # self.log.debug('打败了敌人')
+        #     self.move_chess(coord_attacker, coord_defender, path)  # 移动棋子
 
         return True
 
-    def anti(self, chess, path):
+    def anti(self, coord_attacker, coord_defender, path, st):
+        chess_a = self.board[coord_attacker[0]][coord_attacker[1]][2]  # 进攻方棋子或选中的棋子
+        chess_d = self.board[coord_defender[0]][coord_defender[1]][2]  # 防守方棋子
+
         # 棋子移动动画
-        if not chess or not path:
+        if not chess_a or not path:
             self.log.debug('无法动画移动')
             return
+        if st != 2 and not chess_d:
+            self.log.debug('动画类型不匹配，无法动画移动')
+            return
 
-        self.log.debug(chess.get_info()[3], path)
+        self.log.debug(chess_a.get_info()[3], path)
 
-        # 动画设置
-        anim = QtCore.QPropertyAnimation(chess, b"pos", self)
+        # region 基本动画设置
+        anim = QtCore.QPropertyAnimation(chess_a, b"pos", self)
 
         length = len(path)
         delay = 1 / length
         for i in range(length):
             xy = self.get_pos(path[i])
             pt = QtCore.QPoint(xy[0], xy[1])
-            # self.log.debug(xy, pt, path[i])
             anim.setKeyValueAt(i * delay, pt)
-            # anim.setKeyValueAt(i * delay, path[i])
 
         # anim.setStartValue(path[0])
         xy = self.get_pos(path[-1])
         anim.setEndValue(QtCore.QPoint(xy[0], xy[1]))
-
         anim.setDuration(250 * length)
         # anim.setLoopCount(3)
         # anim.setEasingCurve(QtCore.QEasingCurve.OutBounce)  # 设置动画的节奏 动画曲线/InQuad
 
-        anim.finished.connect(self.call_ai)  # 动画完成时
+        # print(path[0], path[-1], chess_a.get_info(), chess_d.get_info())
+        # endregion
 
-        # 参数 DeleteWhenStopped停止时动画将自动删除；KeepWhenStopped  停止时不会删除动画
-        anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        # 移动到空位置后的动画
+        if st == 2:
+            anim.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
+            # 参数 DeleteWhenStopped停止时动画将自动删除；KeepWhenStopped  停止时不会删除动画
+            anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
-    def antis(self, chess, path):
-        if not chess or not path:
-            self.log.debug('无法动画移动')
-            return
+        # 战而胜之后，按顺序播放一组动画
+        elif st == 1:
+            anim1 = QtCore.QPropertyAnimation(chess_d, b'pos', self)
+            xy = self.get_pos(coord_defender)
+            anim1.setStartValue(QtCore.QPoint(xy[0], xy[1]))
+            xy = self.get_pos([coord_defender[0], -3]) if chess_d.get_info()[0] < 12 \
+                else self.get_pos([coord_defender[0], 5])  # 左红右蓝
+            print([coord_defender[0], -3], xy)
+            anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
+            anim1.setDuration(1000)
+            anim1.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
 
-        # 动画1
-        anim1 = QtCore.QPropertyAnimation(chess, b'pos', self)
-        length = len(path)
-        delay = 1 / length
-        for i in range(length):
-            xy = self.get_pos(path[i])
-            pt = QtCore.QPoint(xy[0], xy[1])
-            anim1.setKeyValueAt(i * delay, pt)
+            # 并行动画QParallelAnimationGroup
+            # 串行动画QSequentialAnimationGroup
+            anim_gp_s = QtCore.QSequentialAnimationGroup(self)
+            anim_gp_s.addAnimation(anim)
+            anim_gp_s.addAnimation(anim1)
+            anim_gp_s.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
-        xy = self.get_pos(path[-1])
-        anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
-        anim1.setDuration(250 * length)
+        # 同归于尽后，先顺序播放后同时播放
+        elif st == 0:
+            # 并行动画QParallelAnimationGroup
+            # 串行动画QSequentialAnimationGroup
+            anim_gp_p = QtCore.QParallelAnimationGroup(self)
+            anim.finished.connect(anim_gp_p.start)  # 动画完成时接下一段动画组
 
+            anim1 = QtCore.QPropertyAnimation(chess_a, b'pos', self)  # 攻方消失
+            xy = self.get_pos(coord_defender)
+            anim1.setStartValue(QtCore.QPoint(xy[0], xy[1]))
+            xy = self.get_pos([coord_defender[0], -3]) if chess_a.get_info()[0] < 12 \
+                else self.get_pos([coord_defender[0], 5])  # 左红右蓝
+            anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
+            anim1.setDuration(1000)
+            # anim1.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st, False))  # 动画完成时
 
-        # 2的动画
-        anim2 = QtCore.QPropertyAnimation(self.btn2, b'pos', self)
-        anim2.setKeyValueAt(0, QPoint(50, 50))
-        anim2.setKeyValueAt(0.25, QPoint(400, 50))
-        anim2.setKeyValueAt(0.5, QPoint(400, 400))
-        anim2.setKeyValueAt(0.75, QPoint(50, 400))
-        anim2.setKeyValueAt(1, QPoint(50, 50))
-        anim2.setDuration(3000)
-        # animation2.start()
+            anim2 = QtCore.QPropertyAnimation(chess_d, b'pos', self)  # 守方消失
+            xy = self.get_pos(coord_defender)
+            anim2.setStartValue(QtCore.QPoint(xy[0], xy[1]))
+            xy = self.get_pos([coord_defender[0], -3]) if chess_d.get_info()[0] < 12 \
+                else self.get_pos([coord_defender[0], 5])  # 左红右蓝
+            anim2.setEndValue(QtCore.QPoint(xy[0], xy[1]))
+            anim2.setDuration(1000)
+            anim2.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
 
-        anim_group = QtCore.QSequentialAnimationGroup(self)
-        anim_group.addAnimation(animation1)
-        anim_group.addAnimation(animation2)
-        anim_group.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+            anim_gp_p.addAnimation(anim1)
+            anim_gp_p.addAnimation(anim2)
+            anim_gp_p.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
-    def _delete_chess(self, coord):
-        # 删除被吃的棋子
+    def _anti_over(self, coord_attacker, coord_defender, st, calling_ai=True):
+        self.lot += 1
 
-        if self._invalid_coord(coord):
-            self.log.debug('坐标不合法')
-            return
+        if st > 0:  # 保留攻击方棋子
+            if st == 1:
+                self.board[coord_defender[0]][coord_defender[1]][2].delete()
 
-        chess = self.board[coord[0]][coord[1]][2]
-        if chess:
-            chess.delete()
+            chess = self.board[coord_attacker[0]][coord_attacker[1]][2]
+            self.board[coord_defender[0]][coord_defender[1]][2] = chess
+        else:  # 棋子都不留
+            self.board[coord_attacker[0]][coord_attacker[1]][2].delete()
+            self.board[coord_defender[0]][coord_defender[1]][2].delete()
+            self.board[coord_defender[0]][coord_defender[1]][2] = None
 
-        self.board[coord[0]][coord[1]][2] = None
+        self.board[coord_attacker[0]][coord_attacker[1]][2] = None
+        self._flush_box(coord_attacker, coord_defender)  # 棋子红框处理和坐标更新
 
-    def move_chess(self, coord_start, coord_end, path=[]):
+        if calling_ai:
+            self.call_ai()
+
+    def move_chess(self, coord_attacker, coord_defender, path, st=0):
         """
-            移动棋子，无条件删除后一个棋子
-            @param coord_start: 起始节点
-            @param coord_end: 终结点
+            移动棋子，并删除相关棋子
+            @param coord_attacker:
+            @param coord_defender:
             @param path: 铁路移动路径
+            @param st: 标志位 0：双亡，1：吃棋 2：移动
             @return:
         """
 
-        if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
+        if self._invalid_coord(coord_attacker) or self._invalid_coord(coord_defender):
             self.log.debug('坐标不合法')
             return
 
-        chess = self.board[coord_start[0]][coord_start[1]][2]  # 进攻方棋子或选中的棋子
+        chess = self.board[coord_attacker[0]][coord_attacker[1]][2]  # 进攻方棋子或选中的棋子
+        chess_d = self.board[coord_defender[0]][coord_defender[1]][2]  # 防守方棋子
         if not chess:
             self.log.debug('进攻方无棋子')
             return
 
-        self._delete_chess(coord_end)  # 删除被吃的棋子
-        self.board[coord_end[0]][coord_end[1]][2] = chess
-        self.board[coord_start[0]][coord_start[1]][2] = None
+        if self.setting[3]:  # 动画移动棋子
+            self.anti(coord_attacker, coord_defender, path, st)
 
-        # 移动棋子
-        if self.setting[3]:  # 动画
-            if not path:
-                path.append(coord_start)
-                path.append(coord_end)
+        else:  # 无动画
+            if st > 0:  # 直接移动棋子
+                x, y = self.get_pos(coord_defender)
+                chess.move(x, y)
+                self.board[coord_defender[0]][coord_defender[1]][2] = chess
 
-            self.anti(chess, path)
-            self._flush_box(coord_end, coord_start)  # 棋子红框处理和坐标更新
+                if st == 1:  # 吃棋
+                    chess_d.delete()  # 删除被吃的棋子
 
-        else:
-            x, y = self.get_pos(coord_end)
-            chess.move(x, y)
-            self._flush_box(coord_end, coord_start)  # 棋子红框处理和坐标更新
+            else:  # 双亡
+                chess.delete()  # 删除进攻方棋子
+                chess_d.delete()  # 删除防守方棋子
+                self.board[coord_defender[0]][coord_defender[1]][2] = None
+
+            self.board[coord_attacker[0]][coord_attacker[1]][2] = None
+            self._flush_box(coord_attacker, coord_defender)  # 棋子红框处理和坐标更新
             self.call_ai()  # 呼叫 AI 走棋
 
     # def _find_enemies(self, row, col):
