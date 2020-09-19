@@ -1625,6 +1625,7 @@ class LandBattleChess(QtWidgets.QWidget):
         # print(path[0], path[-1], chess_a.get_info(), chess_d.get_info())
         # endregion
 
+        # region 后续动画
         # 移动到空位置后的动画
         if st == 2:
             anim.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
@@ -1678,6 +1679,7 @@ class LandBattleChess(QtWidgets.QWidget):
             anim_gp_p.addAnimation(anim1)
             anim_gp_p.addAnimation(anim2)
             anim_gp_p.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        # endregion
 
     def _anti_over(self, coord_attacker, coord_defender, st, calling_ai=True):
         self.lot += 1
