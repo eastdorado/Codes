@@ -86,7 +86,8 @@ class Chess(QtWidgets.QFrame):
         # 3 red  4 blue； 其他任意是原色，隐藏就是背面
         self._style_fm = style_fm if style_fm in [3, 4] else \
             0 if self.is_hide else (self.ID // 12) + 1  # 默认是红色内框
-        # print(self._style_fm)
+
+        # print(self._style_fm, self.colors[self._style_fm])
         self.update()
 
     def delete(self) -> None:
@@ -1201,44 +1202,54 @@ class LandBattleChess(QtWidgets.QWidget):
         if text == '新局':
             print('不能的')
             self.replay()
+
         elif text == '悔棋':
+            # self.log.debug('手数:', self.lot, len(self.seen_card), self.seen_card)
             if self.lot > 0:
                 locus_ai = self.seen_card.pop()
                 locus_me = self.seen_card.pop()
                 self.lot -= 2
-                self.log.debug('手数:', self.lot, len(self.seen_card), self.seen_card)
-                self.log.debug(locus_me, locus_ai)
+
+                self.last = None
+                self.rect_red.clear()
+                # self.log.debug(locus_me, locus_ai)
 
                 # 处理 AI 的棋
                 if len(locus_ai) == 1:  # 翻出的棋子
                     chess = self.board[locus_ai[0][0]][locus_ai[0][1]][2]
                     chess.update_me(None, 0, True)  # 隐藏去框
                     self.dark_room.append(self.aStar.coord2sid(locus_ai[0]))  # 重新打入黑屋
-
+                    # self.log.debug(chess._rank)
                 else:  # 移动或战斗的两个棋子
-                    chess_a = self.board[locus_ai[0][0]][locus_ai[0][1]][2]
-                    chess_d = self.board[locus_ai[1][0]][locus_ai[1][1]][2]
-                    # 复位
-                    # if chess_a and not chess_d
-                    chess_a.update_me(None, 0, True)  # 隐藏去框
-
-                    chess_d.update_me(None, 0, True)  # 隐藏去框
-
-                    coord_a = locus_ai[0]
-                    coord_d = locus_ai[1]
-                    self._flush_box(coord_a, coord_d)
+                    ...
 
                 # 处理我的棋
                 if len(locus_me) == 1:
                     chess = self.board[locus_me[0][0]][locus_me[0][1]][2]
-                    chess.update_me(None, 0, True)  # 隐藏去框
+                    chess.update_me(None, -1, True)  # 隐藏去框
                     self.dark_room.append(self.aStar.coord2sid(locus_me[0]))  # 重新打入黑屋
                 else:
                     ...
+                    # chess_a = self.board[locus_me[0][0]][locus_me[0][1]][2]
+                    # chess_d = self.board[locus_me[1][0]][locus_me[1][1]][2]
+                    # # 复位
+                    # # if chess_a and not chess_d
+                    # chess_a.update_me(None, 0, True)  # 隐藏去框
+                    # chess_d.update_me(None, 0, True)  # 隐藏去框
+                    #
+                    # coord_a = locus_me[0]
+                    # coord_d = locus_me[1]
+                    # self._flush_box(coord_a, coord_d)
 
-
-
-
+                if self.lot > 0:
+                    locus = self.seen_card[-1]
+                    # self.log.debug(locus)
+                    if len(locus) == 1:
+                        self._flush_box(locus[0])
+                    else:
+                        self._flush_box(locus[0], locus[1])
+                # else:
+                #     self.last = None
 
         else:
             self.close()
@@ -1317,13 +1328,9 @@ class LandBattleChess(QtWidgets.QWidget):
         @param args: 包含一个或两个棋子坐标，要么翻牌的，要么移动的
         """
 
-        # self.log.debug(args, type(args))
-        # locus = []
-        # for each in args:
-        #     locus.append(self.board[each[0]][each[1]][2])
-
         self.seen_card.append(list(args))
         self.lot += 1
+        # self.log.debug(args, type(args), self.seen_card)
 
     # 轮到 AI 下棋
     def call_ai(self):
@@ -1496,7 +1503,7 @@ class LandBattleChess(QtWidgets.QWidget):
         #                    coord_defender in [[5, 2], [6, 2]] \
         #         else False  # 中间两兵站，互为邻居，额外加上一个
 
-        self.log.debug(f'站点 ：{coord_attacker}')
+        # self.log.debug(f'站点 ：{coord_attacker}')
 
     # 先路径检测，再战斗检测，最后可能移动
     # 纯粹的路径连通性，含有棋子障碍物的情况
@@ -1510,20 +1517,20 @@ class LandBattleChess(QtWidgets.QWidget):
 
         path = []
         if self._invalid_coord(coord_start) or self._invalid_coord(coord_end):
-            self.log.debug('坐标不合法')
+            # self.log.debug('坐标不合法')
             return path
 
         style, neighbours, _ = self.board[coord_start[0]][coord_start[1]]  # 进攻方棋子或选中的棋子
-        # self.log.debug(style, neighbours)
+
         # 通达性检核
         if coord_end in neighbours:  # 首先都在邻居里搜寻，不在则不可通达，返回
             path.extend([coord_start, coord_end])
         else:
-            self.log.debug('不是邻居关系。', coord_start, coord_end, neighbours)
+            # self.log.debug('不是邻居关系。', coord_start, coord_end, neighbours)
             if style == 1:  # 如果是铁路兵站，扩展的通达性
                 path.extend(self._search_railway(coord_start, coord_end))
                 # path = self.aStar.get_path(self.board, coord_start, coord_end)
-                self.log.debug('铁路路径:', path)
+                # self.log.debug('铁路路径:', path)
 
         return path
 
@@ -1536,12 +1543,12 @@ class LandBattleChess(QtWidgets.QWidget):
             @return: 类型码 0：同归于尽  <0：失败  >0：胜利 -2-3-4:异常
             """
         if not 0 <= id_attacker < 24 or not 0 <= id_defender < 24:
-            self.log.debug('棋子id异常')
+            # self.log.debug('棋子id异常')
             return -3  # 异常
 
         if (id_attacker < 12 and id_defender < 12) or \
                 (id_attacker > 11 and id_defender > 11):
-            self.log.debug('自家人火并')
+            # self.log.debug('自家人火并')
             return -2  # 同伴
 
         ret = -4
@@ -1550,11 +1557,11 @@ class LandBattleChess(QtWidgets.QWidget):
 
         if a < 9 and d < 9:
             comp = d - a  # 越小军衔越大
-            self.log.debug(f'军衔差{comp}级')
+            # self.log.debug(f'军衔差{comp}级')
             ret = 0 if comp == 0 else 1 if comp > 0 else -1
 
         if a is Chess.ORDER.index('军旗'):
-            self.log.debug('军旗不能进攻')
+            # self.log.debug('军旗不能进攻')
             return -1
 
         if d is Chess.ORDER.index('军旗'):  # 比炸弹优先，炸弹炸不了
@@ -1564,24 +1571,24 @@ class LandBattleChess(QtWidgets.QWidget):
                         self.bastion.pop(self.bastion.index('蓝旗'))  # 可以夺去蓝方军旗
                         ret = 1
                     else:
-                        self.log.debug('先排除蓝方所有地雷')
+                        # self.log.debug('先排除蓝方所有地雷')
                         ret = -1
                 else:
                     if '红雷' not in self.bastion:  # 红方地雷已光
                         self.bastion.pop(self.bastion.index('红旗'))  # 可以夺去蓝方军旗
                         ret = 1
                     else:
-                        self.log.debug('先排除红方所有地雷')
+                        # self.log.debug('先排除红方所有地雷')
                         ret = -1
             else:
-                self.log.debug('只有工兵才能扛旗')
+                # self.log.debug('只有工兵才能扛旗')
                 ret = -1
 
         elif a == Chess.ORDER.index('炸弹') or d == Chess.ORDER.index('炸弹'):  # 比地雷优先
             ret = 0
 
         elif a is Chess.ORDER.index('地雷'):
-            self.log.debug('地雷不能进攻')
+            # self.log.debug('地雷不能进攻')
             return -1
 
         elif d is Chess.ORDER.index('地雷'):
@@ -1592,7 +1599,7 @@ class LandBattleChess(QtWidgets.QWidget):
                     self.bastion.pop(self.bastion.index('红雷'))  # 弹出红方地雷， -1
                 ret = 1
             else:
-                self.log.debug('请用工兵排雷')
+                # self.log.debug('请用工兵排雷')
                 ret = -1
 
         return ret
@@ -1607,7 +1614,7 @@ class LandBattleChess(QtWidgets.QWidget):
         """
 
         if self._invalid_coord(coord_attacker) or self._invalid_coord(coord_defender):
-            self.log.debug('坐标不合法')
+            # self.log.debug('坐标不合法')
             return False
 
         node_a = self.board[coord_attacker[0]][coord_attacker[1]]  # 进攻方棋子或选中的棋子
@@ -1615,17 +1622,17 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 兵站必须有棋子
         if node_a[2] is None or node_d[2] is None:
-            self.log.debug('站上无人')
+            # self.log.debug('站上无人')
             return False
 
         # 对方在行营里，不可战斗，除非最后
         if node_d[0] == 3:
-            self.log.debug('对方在行营 line camp 里')
+            # self.log.debug('对方在行营 line camp 里')
             return False
 
         # 对方在大本营里，且设置为不可战斗
         if node_d[0] == 4 and not self.setting[1]:
-            self.log.debug('敌人在大本营 base camp 里, 且不容许吃大本营里的子')
+            # self.log.debug('敌人在大本营 base camp 里, 且不容许吃大本营里的子')
             return False
 
         # 可以搏斗了
@@ -1639,20 +1646,10 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 打不动，按兵不动
         elif result == -1:
-            self.log.debug('打不动，罢兵。')
+            # self.log.debug('打不动，罢兵。')
             return False
 
         self.move_chess(coord_attacker, coord_defender, path, result)  # 移动棋子
-        # elif result == 0:
-        # #     self.log.debug("同归于尽")
-        # #     self._delete_chess(coord_attacker)
-        # #     self._delete_chess(coord_defender)
-        # #     self._flush_box(coord_attacker, coord_defender)  # 刷两个红框
-        # #     self.call_ai()
-        #
-        # else:
-        #     # self.log.debug('打败了敌人')
-        #     self.move_chess(coord_attacker, coord_defender, path)  # 移动棋子
 
         return True
 
@@ -1662,13 +1659,11 @@ class LandBattleChess(QtWidgets.QWidget):
 
         # 棋子移动动画
         if not chess_a or not path:
-            self.log.debug('无法动画移动')
+            # self.log.debug('无法动画移动')
             return
         if st != 2 and not chess_d:
-            self.log.debug('动画类型不匹配，无法动画移动')
+            # self.log.debug('动画类型不匹配，无法动画移动')
             return
-
-        self.log.debug(chess_a.get_info()[3], path)
 
         # region 基本动画设置
         anim = QtCore.QPropertyAnimation(chess_a, b"pos", self)
@@ -1687,7 +1682,6 @@ class LandBattleChess(QtWidgets.QWidget):
         # anim.setLoopCount(3)
         # anim.setEasingCurve(QtCore.QEasingCurve.OutBounce)  # 设置动画的节奏 动画曲线/InQuad
 
-        # print(path[0], path[-1], chess_a.get_info(), chess_d.get_info())
         # endregion
 
         # region 后续动画
@@ -1705,23 +1699,20 @@ class LandBattleChess(QtWidgets.QWidget):
             anim1.setStartValue(QtCore.QPoint(xy[0], xy[1]))
             xy = self.get_pos([coord_defender[0], -3]) if chess_d.get_info()[0] < 12 \
                 else self.get_pos([coord_defender[0], 5])  # 左红右蓝
-            self.log.debug([coord_defender[0], -3], xy)
+            # self.log.debug([coord_defender[0], -3], xy)
             anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
             anim1.setDuration(1000)
             anim1.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
 
-            # 并行动画QParallelAnimationGroup
-            # 串行动画QSequentialAnimationGroup
-            anim_gp_s = QtCore.QSequentialAnimationGroup(self)
+            anim_gp_s = QtCore.QSequentialAnimationGroup(
+                self)  # 串行动画QSequentialAnimationGroup# 并行动画QParallelAnimationGroup
             anim_gp_s.addAnimation(anim)
             anim_gp_s.addAnimation(anim1)
             anim_gp_s.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
         # 同归于尽后，先顺序播放后同时播放
         elif st == 0:
-            # 并行动画QParallelAnimationGroup
-            # 串行动画QSequentialAnimationGroup
-            anim_gp_p = QtCore.QParallelAnimationGroup(self)
+            anim_gp_p = QtCore.QParallelAnimationGroup(self)  # 并行动画QParallelAnimationGroup
             anim.finished.connect(anim_gp_p.start)  # 动画完成时接下一段动画组
 
             anim1 = QtCore.QPropertyAnimation(chess_a, b'pos', self)  # 攻方消失
@@ -1756,8 +1747,8 @@ class LandBattleChess(QtWidgets.QWidget):
         @param st:
         """
 
-        chess_a = self.board[coord_attacker[0]][coord_attacker[1]][2]
-        chess_d = self.board[coord_defender[0]][coord_defender[1]][2]
+        # chess_a = self.board[coord_attacker[0]][coord_attacker[1]][2]
+        # chess_d = self.board[coord_defender[0]][coord_defender[1]][2]
 
         if st > 0:  # 保留攻击方棋子
             # if st == 1:
@@ -1786,13 +1777,13 @@ class LandBattleChess(QtWidgets.QWidget):
         """
 
         if self._invalid_coord(coord_attacker) or self._invalid_coord(coord_defender):
-            self.log.debug('坐标不合法')
+            # self.log.debug('坐标不合法')
             return
 
         chess = self.board[coord_attacker[0]][coord_attacker[1]][2]  # 进攻方棋子或选中的棋子
         chess_d = self.board[coord_defender[0]][coord_defender[1]][2]  # 防守方棋子
         if not chess:
-            self.log.debug('进攻方无棋子')
+            # self.log.debug('进攻方无棋子')
             return
 
         if self.setting[3]:  # 动画移动棋子
@@ -1808,8 +1799,8 @@ class LandBattleChess(QtWidgets.QWidget):
                     chess_d.delete()  # 删除被吃的棋子
 
             else:  # 双亡
-                chess.delete()  # 删除进攻方棋子
-                chess_d.delete()  # 删除防守方棋子
+                # chess.delete()  # 删除进攻方棋子
+                # chess_d.delete()  # 删除防守方棋子
                 self.board[coord_defender[0]][coord_defender[1]][2] = None
 
             self.board[coord_attacker[0]][coord_attacker[1]][2] = None
