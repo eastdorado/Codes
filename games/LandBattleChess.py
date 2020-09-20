@@ -649,19 +649,18 @@ class LandBattleChess(QtWidgets.QWidget):
         self.aStar = AStarRoute()  # 计算最短路径算法
         # 棋盘地图："兵站类型、九宫邻居列表、棋子控件"
         self.board = [[[1, None, None] for _ in range(5)] for _ in range(12)]
-        self.dark_room = None  # 暗牌坐标列表
-        self.bastion = ['红雷', '红雷', '红雷', '红旗', '蓝雷', '蓝雷', '蓝雷', '蓝旗']  # 双方的堡垒
         self.railway = [[1, 0], [1, 1], [1, 2], [1, 3], [1, 4],
                         [2, 4], [3, 4], [4, 4], [5, 4], [6, 4], [7, 4], [8, 4], [9, 4], [10, 4],
                         [10, 3], [10, 2], [10, 1], [10, 0],
                         [9, 0], [8, 0], [7, 0], [6, 0], [5, 0], [4, 0], [3, 0], [2, 0],
                         [5, 1], [5, 2], [5, 3], [6, 1], [6, 2], [6, 3]]  # 所有32个铁路站点
-
-        self.lot = 0  # 手数
         self.setting = BitMark(16)  # 设置区的属性标志位
-        self.enemies = [[], []]  # 可攻击的敌手棋子集合，击杀或同归于尽
 
-        # self.log.debug('地图初始化', self.board)
+        self.bastion = []  # 双方的堡垒
+        self.dark_room = []  # 暗牌坐标列表
+        self.seen_card = []  # 显牌，按顺序加入
+        self.lot = 0  # 手数
+        self.enemies = [[], []]  # 可攻击的敌手棋子集合，击杀或同归于尽
 
         self.tmp = None  # 临时位置，按下时画临时的蓝框用
         self.last = None  # 最终落下的棋子位置，棋子红框用，或翻牌的棋子位置
@@ -682,8 +681,8 @@ class LandBattleChess(QtWidgets.QWidget):
         # 32个铁路兵站，默认都是 1  Railway station
 
         # 14个公路兵站  depot  Highway station
-        self.board[0][0] = [2, None, None]
-        self.board[0][2] = [2, None, None]
+        self.board[0][0][0] = 2
+        self.board[0][2][0] = 2
         self.board[0][4][0] = 2
         self.board[2][2][0] = 2
         self.board[3][1][0] = 2
@@ -774,6 +773,41 @@ class LandBattleChess(QtWidgets.QWidget):
         self.board[6][1][1].pop(self.board[6][1][1].index([5, 1]))
         self.board[6][3][1].pop(self.board[6][3][1].index([5, 3]))
         # self.log.debug(f'地图：{len(self.board[2][3][1])}个', self.board[2][3][1])
+
+    def _clear(self):
+        # region 游戏数据清零
+        for r in range(12):
+            for c in range(5):
+                if self.board[r][c][2]:  # 清理棋子控件
+                    self.board[r][c][2].delete()
+                self.board[r][c][2] = None
+
+        # region 小黑屋/暗牌初始化，翻棋时的mark
+        self.dark_room = [i for i in range(60)]  # 小黑屋去掉行营位置，其他位置放棋子
+        self.dark_room.pop(self.dark_room.index(11))
+        self.dark_room.pop(self.dark_room.index(13))
+        self.dark_room.pop(self.dark_room.index(17))
+        self.dark_room.pop(self.dark_room.index(21))
+        self.dark_room.pop(self.dark_room.index(23))
+        self.dark_room.pop(self.dark_room.index(36))
+        self.dark_room.pop(self.dark_room.index(38))
+        self.dark_room.pop(self.dark_room.index(42))
+        self.dark_room.pop(self.dark_room.index(46))
+        self.dark_room.pop(self.dark_room.index(48))
+        # print(self.dark_room)
+        # endregion
+
+        self.seen_card.clear()
+        self.bastion = ['红雷', '红雷', '红雷', '红旗', '蓝雷', '蓝雷', '蓝雷', '蓝旗']
+
+        self.lot = 0
+        self.selected = None
+        self.last = None
+        self.tmp = None
+        self.rect_blue = None  # 窗口蓝框
+        self.rect_red = []  # 窗口红框,可能两个
+
+        self.setting[8] = 0  # 尚未开始。
 
     def _draw_sites(self, qp: QtGui.QPainter):
         # 绘制棋盘底图
@@ -1113,15 +1147,16 @@ class LandBattleChess(QtWidgets.QWidget):
         # 点中了棋子
         else:
             info_cur = node_cur[2].get_info()
-            # print(ID, coord, hide, rank)
 
             # 第一次点暗棋，如机器先手，则不会执行到这步
             if self.last is None:
                 self.last = coord_cur  # coord
                 self.setting[2] = info_cur[0] // 12  # 选择玩家阵营
+
                 node_cur[2].update_me()  # 红框，采用默认值即可
                 # print("我是蓝方" if self.me else '我是红方')
                 self.dark_room.pop(self.dark_room.index(row * 5 + col))  # 明牌弹出小黑屋
+                self.mark_locus(coord_cur)
                 self.call_ai()  # 呼叫 AI 走棋
 
             # 暗棋需要翻转
@@ -1133,6 +1168,7 @@ class LandBattleChess(QtWidgets.QWidget):
                 self._flush_box(coord_cur)  # 红蓝框
                 # 明牌弹出小黑屋
                 self.dark_room.pop(self.dark_room.index(self.aStar.coord2sid(coord_cur)))
+                self.mark_locus(coord_cur)
                 self.call_ai()  # 呼叫 AI 走棋
 
             # 点击的棋子是玩家的
@@ -1166,7 +1202,44 @@ class LandBattleChess(QtWidgets.QWidget):
             print('不能的')
             self.replay()
         elif text == '悔棋':
-            print('等待完善')
+            if self.lot > 0:
+                locus_ai = self.seen_card.pop()
+                locus_me = self.seen_card.pop()
+                self.lot -= 2
+                self.log.debug('手数:', self.lot, len(self.seen_card), self.seen_card)
+                self.log.debug(locus_me, locus_ai)
+
+                # 处理 AI 的棋
+                if len(locus_ai) == 1:  # 翻出的棋子
+                    chess = self.board[locus_ai[0][0]][locus_ai[0][1]][2]
+                    chess.update_me(None, 0, True)  # 隐藏去框
+                    self.dark_room.append(self.aStar.coord2sid(locus_ai[0]))  # 重新打入黑屋
+
+                else:  # 移动或战斗的两个棋子
+                    chess_a = self.board[locus_ai[0][0]][locus_ai[0][1]][2]
+                    chess_d = self.board[locus_ai[1][0]][locus_ai[1][1]][2]
+                    # 复位
+                    # if chess_a and not chess_d
+                    chess_a.update_me(None, 0, True)  # 隐藏去框
+
+                    chess_d.update_me(None, 0, True)  # 隐藏去框
+
+                    coord_a = locus_ai[0]
+                    coord_d = locus_ai[1]
+                    self._flush_box(coord_a, coord_d)
+
+                # 处理我的棋
+                if len(locus_me) == 1:
+                    chess = self.board[locus_me[0][0]][locus_me[0][1]][2]
+                    chess.update_me(None, 0, True)  # 隐藏去框
+                    self.dark_room.append(self.aStar.coord2sid(locus_me[0]))  # 重新打入黑屋
+                else:
+                    ...
+
+
+
+
+
         else:
             self.close()
 
@@ -1191,35 +1264,9 @@ class LandBattleChess(QtWidgets.QWidget):
     # region 业务逻辑区
     # 新局开始，随机布子
     def replay(self):
-        # region 游戏数据清零
-        self.selected = None
-        self.tmp = None
-        self.last = None
-
-        if self.setting[8]:  # 开始。需要清理棋子控件
-            return
-            # for row in range(12):
-            #     for col in range(5):
-            #         chess = self.composition[row][col]
-            #         chess.destroy()
-            #         self.composition[row][col]= None
-        # endregion
+        self._clear()  # 游戏数据清零
 
         # region 游戏数据初始化
-        # region 小黑屋初始化，后面翻棋的时候要用
-        self.dark_room = [i for i in range(60)]  # 小黑屋去掉行营位置，其他位置放棋子
-        self.dark_room.pop(self.dark_room.index(11))
-        self.dark_room.pop(self.dark_room.index(13))
-        self.dark_room.pop(self.dark_room.index(17))
-        self.dark_room.pop(self.dark_room.index(21))
-        self.dark_room.pop(self.dark_room.index(23))
-        self.dark_room.pop(self.dark_room.index(36))
-        self.dark_room.pop(self.dark_room.index(38))
-        self.dark_room.pop(self.dark_room.index(42))
-        self.dark_room.pop(self.dark_room.index(46))
-        self.dark_room.pop(self.dark_room.index(48))
-        # print(self.dark_room)
-        # endregion
 
         # region 军队初始化
         army = Chess.army_building()
@@ -1227,6 +1274,7 @@ class LandBattleChess(QtWidgets.QWidget):
         # print(len(army), army)
         # endregion
 
+        # 把士兵安放到棋盘地图上
         for each in self.dark_room:
             row = each // 5
             col = each % 5
@@ -1235,23 +1283,27 @@ class LandBattleChess(QtWidgets.QWidget):
             self.board[row][col][2] = Chess(self, army.pop(), [row, col])  # 棋局的棋子分布图
 
             x = self.margin + col * (self.chess_w + self.space_w)
-            y = self.margin + row * (self.chess_h + self.space_h) if row < 6 else \
-                self.margin + self.front + row * (self.chess_h + self.space_h)
+            y = self.margin + row * (self.chess_h + self.space_h)
+            if row >= 6:
+                y += self.front
 
             self.board[row][col][2].setGeometry(x, y, self.chess_w, self.chess_h)
             self.board[row][col][2].show()
+
+        # self.log.debug('棋子分布完毕', self.board)
+
+        self.setting[8] = True
+
         # endregion
 
         # region 开始游戏
-        self.setting[8] = True
-
         if not self.setting[0]:  # 机器先手
-            self._ai_open_chess()
-            if self.move_end:
-                # print(self.move_end)
-                chess_end = self.board[self.move_end[0]][self.move_end[1]][2]
-                chess_end.update_me()  # 红框，采用默认值即可
-                info = chess_end.get_info()
+            last = self._ai_open_chess()
+            if last:
+                # print(last)
+                chess = self.board[last[0]][last[1]][2]
+                chess.update_me()  # 红框，采用默认值即可
+                info = chess.get_info()
                 self.setting[2] = 1 - info[0] // 12  # 选择玩家阵营
                 print("AI是红方" if self.setting[2] else 'AI是蓝方')
         # endregion
@@ -1259,22 +1311,35 @@ class LandBattleChess(QtWidgets.QWidget):
         # while True:
         #     self._AI_open_chess()
 
+    def mark_locus(self, *args) -> None:
+        """
+        记录轨迹，方便悔棋
+        @param args: 包含一个或两个棋子坐标，要么翻牌的，要么移动的
+        """
+
+        # self.log.debug(args, type(args))
+        # locus = []
+        # for each in args:
+        #     locus.append(self.board[each[0]][each[1]][2])
+
+        self.seen_card.append(list(args))
+        self.lot += 1
+
     # 轮到 AI 下棋
     def call_ai(self):
         # 电脑走起
-        self._ai_open_chess()
+        self._ai_open_chess()  # AI翻棋
         # 吃棋
-        self.lot += 1
 
-    # AI 翻棋
     def _ai_open_chess(self):
-        # AI翻棋
+        # AI 翻棋
         if self.dark_room:  # 还有暗棋，可以翻开
             index = Utils.rand_int(0, len(self.dark_room) - 1)
             # 明牌弹出小黑屋，切换到当前翻出的位置
             coord_cur = self.aStar.sid2coord(self.dark_room.pop(index))
             # print(self.last, index, self.dark_room)
             self._flush_box(coord_cur)
+            self.mark_locus(coord_cur)
 
     def victory(self):
         if '红旗' not in self.bastion:
@@ -1626,6 +1691,7 @@ class LandBattleChess(QtWidgets.QWidget):
         # endregion
 
         # region 后续动画
+
         # 移动到空位置后的动画
         if st == 2:
             anim.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
@@ -1639,7 +1705,7 @@ class LandBattleChess(QtWidgets.QWidget):
             anim1.setStartValue(QtCore.QPoint(xy[0], xy[1]))
             xy = self.get_pos([coord_defender[0], -3]) if chess_d.get_info()[0] < 12 \
                 else self.get_pos([coord_defender[0], 5])  # 左红右蓝
-            print([coord_defender[0], -3], xy)
+            self.log.debug([coord_defender[0], -3], xy)
             anim1.setEndValue(QtCore.QPoint(xy[0], xy[1]))
             anim1.setDuration(1000)
             anim1.finished.connect(partial(self._anti_over, coord_attacker, coord_defender, st))  # 动画完成时
@@ -1679,27 +1745,35 @@ class LandBattleChess(QtWidgets.QWidget):
             anim_gp_p.addAnimation(anim1)
             anim_gp_p.addAnimation(anim2)
             anim_gp_p.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+
         # endregion
 
-    def _anti_over(self, coord_attacker, coord_defender, st, calling_ai=True):
-        self.lot += 1
+    def _anti_over(self, coord_attacker, coord_defender, st):
+        """
+        动画结束的收尾，自动呼叫 ai
+        @param coord_attacker:
+        @param coord_defender:
+        @param st:
+        """
+
+        chess_a = self.board[coord_attacker[0]][coord_attacker[1]][2]
+        chess_d = self.board[coord_defender[0]][coord_defender[1]][2]
 
         if st > 0:  # 保留攻击方棋子
-            if st == 1:
-                self.board[coord_defender[0]][coord_defender[1]][2].delete()
+            # if st == 1:
+            #     self.board[coord_defender[0]][coord_defender[1]][2].delete()
 
             chess = self.board[coord_attacker[0]][coord_attacker[1]][2]
             self.board[coord_defender[0]][coord_defender[1]][2] = chess
         else:  # 棋子都不留
-            self.board[coord_attacker[0]][coord_attacker[1]][2].delete()
-            self.board[coord_defender[0]][coord_defender[1]][2].delete()
+            # self.board[coord_attacker[0]][coord_attacker[1]][2].delete()
+            # self.board[coord_defender[0]][coord_defender[1]][2].delete()
             self.board[coord_defender[0]][coord_defender[1]][2] = None
 
         self.board[coord_attacker[0]][coord_attacker[1]][2] = None
-        self._flush_box(coord_attacker, coord_defender)  # 棋子红框处理和坐标更新
-
-        if calling_ai:
-            self.call_ai()
+        self._flush_box(coord_defender, coord_attacker)  # 棋子红框处理和坐标更新
+        self.mark_locus(coord_attacker, coord_defender)
+        self.call_ai()  # 呼叫 AI 走棋
 
     def move_chess(self, coord_attacker, coord_defender, path, st=0):
         """

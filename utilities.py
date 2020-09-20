@@ -2019,6 +2019,7 @@ class MyLog(object):
         self.flag = flag  # 0仅写入日志文件， 1二者同时输出 2仅屏幕输出
         self.log_tags = log_tags
         self.log_format = log_format
+        self.msg = []
 
         # self.file_name = os.path.split(__file__)[-1].split(".")[0]  # 当前文件名称
 
@@ -2030,21 +2031,32 @@ class MyLog(object):
         # self.debug(f'{self.flag} ddd {self.file_name}', '好啊')
 
     def debug(self, *args):
+        # self.msg.clear()
+        #
+        # def list2str(list_arg: list):
+        #     for i, element in enumerate(list_arg):
+        #         if isinstance(element, list):
+        #             self.list2str(element)
+        #         else:
+        #             self.msg.append(str(element))
+
         sf = sys._getframe()
         # sf.f_back.f_code.co_name  # 父级调用函数名称
         # sf.f_back.f_lineno  # 父级调用处的行号
         # sf.f_code.co_name  # 调用函数名称
         # sf.f_lineno  # 调用处行号
 
-        msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}'
+        # msg = f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】{self.log_tags} {args}'
+        # arg = ' '.join(args)
+        msg = '【 {:s} {} 】{} {}'.format(sf.f_back.f_code.co_name, sf.f_back.f_lineno, self.log_tags, args)
 
         if self.flag < 2:
             with open(f'{self.log_path}/{self.log_file}', 'a') as f:
                 f.write(msg)
 
         if self.flag:
-            # print(f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】', *args)
-            print(msg)
+            print(f'【 {sf.f_back.f_code.co_name} {sf.f_back.f_lineno} 】', *args)
+            # print(msg)
 
     @staticmethod
     def get_cur():
