@@ -1217,8 +1217,9 @@ class LandBattleChess(QtWidgets.QWidget):
                 # 处理 AI 的棋
                 if len(locus_ai) == 1:  # 翻出的棋子
                     chess = self.board[locus_ai[0][0]][locus_ai[0][1]][2]
-                    chess.update_me(None, 0, True)  # 隐藏去框
-                    self.dark_room.append(self.aStar.coord2sid(locus_ai[0]))  # 重新打入黑屋
+                    if chess:
+                        chess.update_me(None, 0, True)  # 隐藏去框
+                        self.dark_room.append(self.aStar.coord2sid(locus_ai[0]))  # 重新打入黑屋
                     # self.log.debug(chess._rank)
                 else:  # 移动或战斗的两个棋子
                     ...
@@ -1226,8 +1227,9 @@ class LandBattleChess(QtWidgets.QWidget):
                 # 处理我的棋
                 if len(locus_me) == 1:
                     chess = self.board[locus_me[0][0]][locus_me[0][1]][2]
-                    chess.update_me(None, -1, True)  # 隐藏去框
-                    self.dark_room.append(self.aStar.coord2sid(locus_me[0]))  # 重新打入黑屋
+                    if chess:
+                        chess.update_me(None, -1, True)  # 隐藏去框
+                        self.dark_room.append(self.aStar.coord2sid(locus_me[0]))  # 重新打入黑屋
                 else:
                     ...
                     # chess_a = self.board[locus_me[0][0]][locus_me[0][1]][2]
