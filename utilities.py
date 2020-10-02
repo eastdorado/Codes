@@ -2098,8 +2098,7 @@ class StyleSheet(object):
             图片是白色半透明，作为子窗体的底图，则子窗体半透明，上面控件不透明。
             实现底图半透明化
             # Tool_Widget{
-            border - radius: 10
-            px;
+            border - radius: 10px;
             border - image: url(img / toolbg.png)
             }
         """
