@@ -124,7 +124,7 @@ class LogonPage(QtWidgets.QWidget):
     @staticmethod
     def slot_pwd_builders(le):
         # le = QtWidgets.QLineEdit("dsaf")
-        print('自动生成密码', le.text())
+        # print('自动生成密码', le.text())
         Cypher().show()
 
 
