@@ -24,7 +24,7 @@ from win32com.client import constants, gencache, Dispatch, DispatchEx
 from PyPDF4 import PdfFileReader, PdfFileWriter
 
 import copy
-import docx
+# import docx
 import json
 import random
 import array

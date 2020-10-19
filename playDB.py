@@ -25,7 +25,7 @@ from enum import IntEnum, unique
 import numpy as np
 import piexif
 from utilities import Utils, EllipseButton, StyleSheet, MyJson
-import cv2
+# import cv2
 
 # import cgitb  # �൱����
 

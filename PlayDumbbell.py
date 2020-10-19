@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import numpy as np
-import cv2
+# import cv2
 
 import pyttsx3
 import win32com.client
