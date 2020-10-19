@@ -32,7 +32,7 @@ import string
 import time
 import uuid
 
-import cv2
+# import cv2
 from PIL import Image, ImageStat, ImageEnhance, ImageQt, ImageFilter
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets
