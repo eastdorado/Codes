@@ -1,283 +1,264 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
+"""
+Created on 2019年3月19日
+@author: Irony
+@site: https://pyqt5.com https://github.com/892768447
+@email: 892768447@qq.com
+@file: CircleLine
+@description:
+"""
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from math import floor, pi, cos, sin
+from random import random, randint
+from time import time
 
-
-class StockDialog(QWidget):
-    def __init__(self, parent=None):
-        super(StockDialog, self).__init__(parent)
-        self.setWindowTitle("利用QPainter绘制各种图形")
-
-        mainSplitter = QSplitter(Qt.Horizontal)
-        mainSplitter.setOpaqueResize(True)
-
-        frame = QFrame(mainSplitter)
-        mainLayout = QGridLayout(frame)
-        # mainLayout.setMargin(10)
-        mainLayout.setSpacing(6)
-
-        label1 = QLabel("形状：")
-        label2 = QLabel("画笔线宽：")
-        label3 = QLabel("画笔颜色：")
-        label4 = QLabel("画笔风格：")
-        label5 = QLabel("画笔顶端：")
-        label6 = QLabel("画笔连接点：")
-        label7 = QLabel("画刷风格：")
-        label8 = QLabel("画刷颜色：")
-
-        self.shapeComboBox = QComboBox()
-        self.shapeComboBox.addItem("Line", "Line")
-        self.shapeComboBox.addItem("Rectangle", "Rectangle")
-        self.shapeComboBox.addItem('Rounded Rectangle', 'Rounded Rectangle')
-        self.shapeComboBox.addItem('Ellipse', 'Ellipse')
-        self.shapeComboBox.addItem('Pie', 'Pie')
-        self.shapeComboBox.addItem('Chord', 'Chord')
-        self.shapeComboBox.addItem('Path', 'Path')
-        self.shapeComboBox.addItem('Polygon', 'Polygon')
-        self.shapeComboBox.addItem('Polyline', 'Polyline')
-        self.shapeComboBox.addItem('Arc', 'Arc')
-        self.shapeComboBox.addItem('Points', 'Points')
-        self.shapeComboBox.addItem('Text', 'Text')
-        self.shapeComboBox.addItem('Pixmap', 'Pixmap')
-
-        self.widthSpinBox = QSpinBox()
-        self.widthSpinBox.setRange(0, 20)
-
-        self.penColorFrame = QFrame()
-        self.penColorFrame.setAutoFillBackground(True)
-        self.penColorFrame.setPalette(QPalette(Qt.blue))
-        self.penColorPushButton = QPushButton("更改")
-
-        self.penStyleComboBox = QComboBox()
-        self.penStyleComboBox.addItem("Solid", Qt.SolidLine)
-        self.penStyleComboBox.addItem('Dash', Qt.DashLine)
-        self.penStyleComboBox.addItem('Dot', Qt.DotLine)
-        self.penStyleComboBox.addItem('Dash Dot', Qt.DashDotLine)
-        self.penStyleComboBox.addItem('Dash Dot Dot', Qt.DashDotDotLine)
-        self.penStyleComboBox.addItem('None', Qt.NoPen)
-
-        self.penCapComboBox = QComboBox()
-        self.penCapComboBox.addItem("Flat", Qt.FlatCap)
-        self.penCapComboBox.addItem('Square', Qt.SquareCap)
-        self.penCapComboBox.addItem('Round', Qt.RoundCap)
-
-        self.penJoinComboBox = QComboBox()
-        self.penJoinComboBox.addItem("Miter", Qt.MiterJoin)
-        self.penJoinComboBox.addItem('Bebel', Qt.BevelJoin)
-        self.penJoinComboBox.addItem('Round', Qt.RoundJoin)
-
-        self.brushStyleComboBox = QComboBox()
-        self.brushStyleComboBox.addItem("Linear Gradient", Qt.LinearGradientPattern)
-        self.brushStyleComboBox.addItem('Radial Gradient', Qt.RadialGradientPattern)
-        self.brushStyleComboBox.addItem('Conical Gradient', Qt.ConicalGradientPattern)
-        self.brushStyleComboBox.addItem('Texture', Qt.TexturePattern)
-        self.brushStyleComboBox.addItem('Solid', Qt.SolidPattern)
-        self.brushStyleComboBox.addItem('Horizontal', Qt.HorPattern)
-        self.brushStyleComboBox.addItem('Vertical', Qt.VerPattern)
-        self.brushStyleComboBox.addItem('Cross', Qt.CrossPattern)
-        self.brushStyleComboBox.addItem('Backward Diagonal', Qt.BDiagPattern)
-        self.brushStyleComboBox.addItem('Forward Diagonal', Qt.FDiagPattern)
-        self.brushStyleComboBox.addItem('Diagonal Cross', Qt.DiagCrossPattern)
-        self.brushStyleComboBox.addItem('Dense 1', Qt.Dense1Pattern)
-        self.brushStyleComboBox.addItem('Dense 2', Qt.Dense2Pattern)
-        self.brushStyleComboBox.addItem('Dense 3', Qt.Dense3Pattern)
-        self.brushStyleComboBox.addItem('Dense 4', Qt.Dense4Pattern)
-        self.brushStyleComboBox.addItem('Dense 5', Qt.Dense5Pattern)
-        self.brushStyleComboBox.addItem('Dense 6', Qt.Dense6Pattern)
-        self.brushStyleComboBox.addItem('Dense 7', Qt.Dense7Pattern)
-        self.brushStyleComboBox.addItem('None', Qt.NoBrush)
-
-        self.brushColorFrame = QFrame()
-        self.brushColorFrame.setAutoFillBackground(True)
-        self.brushColorFrame.setPalette(QPalette(Qt.green))
-        self.brushColorPushButton = QPushButton("更改")
-
-        labelCol = 0
-        contentCol = 1
-
-        # 建立布局
-        mainLayout.addWidget(label1, 1, labelCol)
-        mainLayout.addWidget(self.shapeComboBox, 1, contentCol)
-        mainLayout.addWidget(label2, 2, labelCol)
-        mainLayout.addWidget(self.widthSpinBox, 2, contentCol)
-        mainLayout.addWidget(label3, 4, labelCol)
-        mainLayout.addWidget(self.penColorFrame, 4, contentCol)
-        mainLayout.addWidget(self.penColorPushButton, 4, 3)
-        mainLayout.addWidget(label4, 6, labelCol)
-        mainLayout.addWidget(self.penStyleComboBox, 6, contentCol)
-        mainLayout.addWidget(label5, 8, labelCol)
-        mainLayout.addWidget(self.penCapComboBox, 8, contentCol)
-        mainLayout.addWidget(label6, 10, labelCol)
-        mainLayout.addWidget(self.penJoinComboBox, 10, contentCol)
-        mainLayout.addWidget(label7, 12, labelCol)
-        mainLayout.addWidget(self.brushStyleComboBox, 12, contentCol)
-        mainLayout.addWidget(label8, 14, labelCol)
-        mainLayout.addWidget(self.brushColorFrame, 14, contentCol)
-        mainLayout.addWidget(self.brushColorPushButton, 14, 3)
-        mainSplitter1 = QSplitter(Qt.Horizontal)
-        mainSplitter1.setOpaqueResize(True)
-
-        stack1 = QStackedWidget()
-        stack1.setFrameStyle(QFrame.Panel | QFrame.Raised)
-        self.area = PaintArea()
-        stack1.addWidget(self.area)
-        frame1 = QFrame(mainSplitter1)
-        mainLayout1 = QVBoxLayout(frame1)
-        # mainLayout1.setMargin(10)
-        mainLayout1.setSpacing(6)
-        mainLayout1.addWidget(stack1)
-
-        layout = QGridLayout(self)
-        layout.addWidget(mainSplitter1, 0, 0)
-        layout.addWidget(mainSplitter, 0, 1)
-        self.setLayout(layout)
-
-        # 信号和槽函数
-        self.shapeComboBox.activated.connect(self.slotShape)
-        self.widthSpinBox.valueChanged.connect(self.slotPenWidth)
-        self.penColorPushButton.clicked.connect(self.slotPenColor)
-        self.penStyleComboBox.activated.connect(self.slotPenStyle)
-        self.penCapComboBox.activated.connect(self.slotPenCap)
-        self.penJoinComboBox.activated.connect(self.slotPenJoin)
-        self.brushStyleComboBox.activated.connect(self.slotBrush)
-        self.brushColorPushButton.clicked.connect(self.slotBrushColor)
-
-        self.slotShape(self.shapeComboBox.currentIndex())
-        self.slotPenWidth(self.widthSpinBox.value())
-        self.slotBrush(self.brushStyleComboBox.currentIndex())
-
-    def slotShape(self, value):
-        shape = self.area.Shape[value]
-        self.area.setShape(shape)
-
-    def slotPenWidth(self, value):
-        color = self.penColorFrame.palette().color(QPalette.Window)
-        style = Qt.PenStyle(self.penStyleComboBox.itemData(self.penStyleComboBox.currentIndex(), Qt.UserRole))
-        cap = Qt.PenCapStyle(self.penCapComboBox.itemData(self.penCapComboBox.currentIndex(), Qt.UserRole))
-        join = Qt.PenJoinStyle(self.penJoinComboBox.itemData(self.penJoinComboBox.currentIndex(), Qt.UserRole))
-        self.area.setPen(QPen(color, value, style, cap, join))
-
-    def slotPenStyle(self, value):
-        self.slotPenWidth(value)
-
-    def slotPenCap(self, value):
-        self.slotPenWidth(value)
-
-    def slotPenJoin(self, value):
-        self.slotPenWidth(value)
-
-    def slotPenColor(self):
-        color = QColorDialog.getColor(Qt.blue)
-        self.penColorFrame.setPalette(QPalette(color))
-        self.area.setPen(QPen(color))
-
-    def slotBrushColor(self):
-        color = QColorDialog.getColor(Qt.blue)
-        self.brushColorFrame.setPalette(QPalette(color))
-        self.slotBrush(self.brushStyleComboBox.currentIndex())
-
-    def slotBrush(self, value):
-        color = self.brushColorFrame.palette().color(QPalette.Window)
-        style = Qt.BrushStyle(self.brushStyleComboBox.itemData(value, Qt.UserRole))
-
-        if (style == Qt.LinearGradientPattern):
-            linearGradient = QLinearGradient(0, 0, 400, 400)
-            linearGradient.setColorAt(0.0, Qt.white)
-            linearGradient.setColorAt(0.2, color)
-            linearGradient.setColorAt(1.0, Qt.black)
-            self.area.setBrush(linearGradient)
-        elif style == Qt.RadialGradientPattern:
-            radialGradient = QRadialGradient(200, 200, 80, 70, 70);
-            radialGradient.setColorAt(0.0, Qt.white)
-            radialGradient.setColorAt(0.2, Qt.green)
-            radialGradient.setColorAt(1.0, Qt.black)
-            self.area.setBrush(radialGradient)
-        elif (style == Qt.ConicalGradientPattern):
-            conicalGradient = QConicalGradient(200, 200, 30)
-            conicalGradient.setColorAt(0.0, Qt.white)
-            conicalGradient.setColorAt(0.2, color)
-            conicalGradient.setColorAt(1.0, Qt.black)
-            self.area.setBrush(conicalGradient)
-        elif (style == Qt.TexturePattern):
-            self.area.setBrush(QBrush(QPixmap("images/brick.png")))
-        else:
-            self.area.setBrush(QBrush(color, style))
+from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QColor, QPainter, QPainterPath, QPen
+from PyQt5.QtWidgets import QWidget
 
 
-class PaintArea(QWidget):
-    def __init__(self):
-        super(PaintArea, self).__init__()
-        self.Shape = ["Line", "Rectangle", 'Rounded Rectangle', "Ellipse", "Pie", 'Chord',
-                      "Path", "Polygon", "Polyline", "Arc", "Points", "Text", "Pixmap"]
-        self.setPalette(QPalette(Qt.white))
+__Author__ = 'Irony'
+__Copyright__ = 'Copyright (c) 2019'
+
+# 最小和最大半径、半径阈值和填充圆的百分比
+radMin = 10
+radMax = 80
+filledCircle = 30  # 填充圆的百分比
+concentricCircle = 60  # 同心圆百分比
+radThreshold = 25  # IFF special, over this radius concentric, otherwise filled
+# 最小和最大移动速度
+speedMin = 0.9
+speedMax = 8.9
+# 每个圆和模糊效果的最大透明度
+maxOpacity = 0.6
+
+colors = [
+    QColor(52, 168, 83),
+    QColor(117, 95, 147),
+    QColor(199, 108, 23),
+    QColor(194, 62, 55),
+    QColor(0, 172, 212),
+    QColor(120, 120, 120)
+]
+circleBorder = 10
+backgroundLine = colors[0]
+backgroundColor = QColor(38, 43, 46)
+backgroundMlt = 0.85
+
+lineBorder = 2.5
+
+# 最重要的是：包含它们的整个圆和数组的数目
+maxCircles = 8
+points = []
+
+# 实验变量
+circleExp = 1
+circleExpMax = 1.003
+circleExpMin = 0.997
+circleExpSp = 0.00004
+circlePulse = False
+
+# 生成随机整数 a<=x<=b
+
+
+def randint(a, b):
+    return floor(random() * (b - a + 1) + a)
+
+# 生成随机小数
+
+
+def randRange(a, b):
+    return random() * (b - a) + a
+
+# 生成接近a的随机小数
+
+
+def hyperRange(a, b):
+    return random() * random() * random() * (b - a) + a
+
+
+class Circle:
+
+    def __init__(self, background, width, height):
+        self.background = background
+        self.x = randRange(-width / 2, width / 2)
+        self.y = randRange(-height / 2, height / 2)
+        self.radius = hyperRange(radMin, radMax)
+        self.filled = (False if randint(
+            0, 100) > concentricCircle else 'full') if self.radius < radThreshold else (
+                False if randint(0, 100) > concentricCircle else 'concentric')
+        self.color = colors[randint(0, len(colors) - 1)]
+        self.borderColor = colors[randint(0, len(colors) - 1)]
+        self.opacity = 0.05
+        self.speed = randRange(speedMin, speedMax)  # * (radMin / self.radius)
+        self.speedAngle = random() * 2 * pi
+        self.speedx = cos(self.speedAngle) * self.speed
+        self.speedy = sin(self.speedAngle) * self.speed
+        spacex = abs((self.x - (-1 if self.speedx < 0 else 1) *
+                      (width / 2 + self.radius)) / self.speedx)
+        spacey = abs((self.y - (-1 if self.speedy < 0 else 1) *
+                      (height / 2 + self.radius)) / self.speedy)
+        self.ttl = min(spacex, spacey)
+
+
+class CircleLineWindow(QWidget):
+
+    def __init__(self, *args, **kwargs):
+        super(CircleLineWindow, self).__init__(*args, **kwargs)
+        # 设置背景颜色
+        palette = self.palette()
+        palette.setColor(palette.Background, backgroundColor)
         self.setAutoFillBackground(True)
-        self.setMinimumSize(400, 400)
-        self.pen = QPen()
-        self.brush = QBrush()
+        self.setPalette(palette)
+        # 获取屏幕大小
+        geometry = QApplication.instance().desktop().availableGeometry()
+        self.screenWidth = geometry.width()
+        self.screenHeight = geometry.height()
+        self._canDraw = True
+        self._firstDraw = True
+        self._timer = QTimer(self, timeout=self.update)
+        self.init()
 
-    def setShape(self, s):
-        self.shape = s
+    def init(self):
+        points.clear()
+        # 链接的最小距离
+        self.linkDist = min(self.screenWidth, self.screenHeight) / 2.4
+        # 初始化点
+        for _ in range(maxCircles * 3):
+            points.append(Circle('', self.screenWidth, self.screenHeight))
         self.update()
 
-    def setPen(self, p):
-        self.pen = p
-        self.update()
+    def showEvent(self, event):
+        super(CircleLineWindow, self).showEvent(event)
+        self._canDraw = True
 
-    def setBrush(self, b):
-        self.brush = b
-        self.update()
+    def hideEvent(self, event):
+        super(CircleLineWindow, self).hideEvent(event)
+        # 窗口最小化要停止绘制, 减少cpu占用
+        self._canDraw = False
 
-    def paintEvent(self, QPaintEvent):
-        p = QPainter(self)
-        p.setPen(self.pen)
-        p.setBrush(self.brush)
+    def paintEvent(self, event):
+        super(CircleLineWindow, self).paintEvent(event)
+        if not self._canDraw:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        self.draw(painter)
 
-        rect = QRect(50, 100, 300, 200)
-        points = [QPoint(150, 100), QPoint(300, 150), QPoint(350, 250), QPoint(100, 300)]
-        startAngle = 30 * 16
-        spanAngle = 120 * 16
+    def draw(self, painter):
+        global circleExp, circleExpSp
+        if circlePulse:
+            if circleExp < circleExpMin or circleExp > circleExpMax:
+                circleExpSp *= -1
+            circleExp += circleExpSp
 
-        path = QPainterPath();
-        path.addRect(150, 150, 100, 100)
-        path.moveTo(100, 100)
-        path.cubicTo(300, 100, 200, 200, 300, 300)
-        path.cubicTo(100, 300, 200, 200, 100, 100)
+        painter.translate(self.screenWidth / 2, self.screenHeight / 2)
 
-        if self.shape == "Line":
-            p.drawLine(rect.topLeft(), rect.bottomRight())
-        elif self.shape == "Rectangle":
-            p.drawRect(rect)
-        elif self.shape == 'Rounded Rectangle':
-            p.drawRoundedRect(rect, 25, 25, Qt.RelativeSize)
-        elif self.shape == "Ellipse":
-            p.drawEllipse(rect)
-        elif self.shape == "Polygon":
-            p.drawPolygon(QPolygon(points), Qt.WindingFill)
-        elif self.shape == "Polyline":
-            p.drawPolyline(QPolygon(points))
-        elif self.shape == "Points":
-            p.drawPoints(QPolygon(points))
-        elif self.shape == "Pie":
-            p.drawPie(rect, startAngle, spanAngle)
-        elif self.shape == "Arc":
-            p.drawArc(rect, startAngle, spanAngle)
-        elif self.shape == "Chord":
-            p.drawChord(rect, startAngle, spanAngle)
-        elif self.shape == "Path":
-            p.drawPath(path)
-        elif self.shape == "Text":
-            p.drawText(rect, Qt.AlignCenter, "Hello Qt!")
-        elif self.shape == "Pixmap":
-            p.drawPixmap(150, 150, QPixmap("images/qt-logo.png"))
+        if self._firstDraw:
+            t = time()
+        self.renderPoints(painter, points)
+        if self._firstDraw:
+            self._firstDraw = False
+            # 此处有个比例关系用于设置timer的时间，如果初始窗口很小，没有比例会导致动画很快
+            t = (time() - t) * 1000 * 2
+            # 比例最大不能超过1920/800
+            t = int(min(2.4, self.screenHeight / self.height()) * t) - 1
+            t = t if t > 15 else 15  # 不能小于15s
+            print('start timer(%d msec)' % t)
+            # 开启定时器
+            self._timer.start(t)
+
+    def drawCircle(self, painter, circle):
+        #         circle.radius *= circleExp
+        if circle.background:
+            circle.radius *= circleExp
+        else:
+            circle.radius /= circleExp
+        radius = circle.radius
+
+        r = radius * circleExp
+        # 边框颜色设置透明度
+        c = QColor(circle.borderColor)
+        c.setAlphaF(circle.opacity)
+
+        painter.save()
+        if circle.filled == 'full':
+            # 设置背景刷
+            painter.setBrush(c)
+            painter.setPen(Qt.NoPen)
+        else:
+            # 设置画笔
+            painter.setPen(
+                QPen(c, max(1, circleBorder * (radMin - circle.radius) / (radMin - radMax))))
+
+        # 画实心圆或者圆圈
+        painter.drawEllipse(round(circle.x - r), round(circle.y - r), round(2 * r), round(2 * r))
+        painter.restore()
+
+        if circle.filled == 'concentric':
+            r = radius / 2
+            # 画圆圈
+            painter.save()
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(
+                QPen(c, max(1, circleBorder * (radMin - circle.radius) / (radMin - radMax))))
+            painter.drawEllipse(round(circle.x - r), round(circle.y - r), round(2 * r), round(2 * r))
+            painter.restore()
+
+        circle.x += circle.speedx
+        circle.y += circle.speedy
+        if (circle.opacity < maxOpacity):
+            circle.opacity += 0.01
+        circle.ttl -= 1
+
+    def renderPoints(self, painter, circles):
+        for i, circle in enumerate(circles):
+            if circle.ttl < -20:
+                # 重新初始化一个
+                circle = Circle('', self.screenWidth, self.screenHeight)
+                circles[i] = circle
+            self.drawCircle(painter, circle)
+
+        circles_len = len(circles)
+        for i in range(circles_len - 1):
+            for j in range(i + 1, circles_len):
+                deltax = circles[i].x - circles[j].x
+                deltay = circles[i].y - circles[j].y
+                dist = pow(pow(deltax, 2) + pow(deltay, 2), 0.5)
+                # if the circles are overlapping, no laser connecting them
+                if dist <= circles[i].radius + circles[j].radius:
+                    continue
+                # otherwise we connect them only if the dist is < linkDist
+                if dist < self.linkDist:
+                    xi = (1 if circles[i].x < circles[j].x else -
+                          1) * abs(circles[i].radius * deltax / dist)
+                    yi = (1 if circles[i].y < circles[j].y else -
+                          1) * abs(circles[i].radius * deltay / dist)
+                    xj = (-1 if circles[i].x < circles[j].x else 1) * \
+                        abs(circles[j].radius * deltax / dist)
+                    yj = (-1 if circles[i].y < circles[j].y else 1) * \
+                        abs(circles[j].radius * deltay / dist)
+                    path = QPainterPath()
+                    path.moveTo(circles[i].x + xi, circles[i].y + yi)
+                    path.lineTo(circles[j].x + xj, circles[j].y + yj)
+#                     samecolor = circles[i].color == circles[j].color
+                    c = QColor(circles[i].borderColor)
+                    c.setAlphaF(min(circles[i].opacity, circles[j].opacity)
+                                * ((self.linkDist - dist) / self.linkDist))
+                    painter.setPen(QPen(c, (
+                        lineBorder * backgroundMlt if circles[i].background else lineBorder) * (
+                        (self.linkDist - dist) / self.linkDist)))
+                    painter.drawPath(path)
 
 
 if __name__ == '__main__':
+    import sys
+    from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
-    form = StockDialog()
-    form.show()
-    app.exec_()
+    w = CircleLineWindow()
+    w.resize(800, 600)
+    w.show()
+    sys.exit(app.exec_())

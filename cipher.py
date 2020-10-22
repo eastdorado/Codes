@@ -21,7 +21,7 @@ OTHERS = re.compile(r'[^0-9A-Za-z]')
 
 def load_common_password():
     words = []
-    with open("./res/10k_most_common.txt", "r") as f:
+    with open("E:/Codes/res/10k_most_common.txt", "r") as f:
         for word in f:
             words.append(word.strip())
     return words

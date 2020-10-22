@@ -714,6 +714,18 @@ class Utils(object):
 
         args[0].setGraphicsEffect(effect)
 
+    # 高斯模糊图片
+    # @staticmethod
+    # def setImage(self):
+    #         src = cv2.imread('/home/ly/Pictures/Screenshot from 2019-11-14 09-03-28.png')  # opencv读取图片
+    #         img = cv2.GaussianBlur(src, (0, 0),
+    #                                self.val)  # 若ksize不为(0, 0)，则按照ksize计算，后面的sigmaX没有意义。若ksize为(0, 0)，则根据后面的sigmaX计算ksize
+    #         img2 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # opencv读取的bgr格式图片转换成rgb格式
+    #         _image = QtGui.QImage(img2[:], img2.shape[1], img2.shape[0], img2.shape[1] * 3,
+    #                               QtGui.QImage.Format_RGB888)  # pyqt5转换成自己能放的图片格式
+    #         jpg_out = QtGui.QPixmap(_image).scaled(self.imgLabel.width(), self.imgLabel.height())  # 设置图片大小
+    #         self.imgLabel.setPixmap(jpg_out)  # 设置图片显示
+
     # 语言国际化
     @staticmethod
     def tr(msg):
@@ -2005,14 +2017,12 @@ class MyLog(object):
     #           'ERROR': logging.ERROR,
     #           'CRITICAL': logging.CRITICAL}
 
-    # 用字典保存日志输出格式
-    # format_dict = {0: logging.Formatter('%(message)s'),
-    #                1: logging.Formatter('%(name)s - %(message)s'),
-    #                2: logging.Formatter('%(filename)s - %(module)s - %(lineno)d - %(levelname)s - %(message)s'),
-    #                3: logging.Formatter('%(thread)d - %(threadName)s - %(process)d - %(message)s'),
-    #                4: logging.Formatter('%(funcName)s - %(created)f - %(levelname)s - %(message)s'),
-    #                5: logging.Formatter('%(pathname)s - %(levelno)s - %(levelname)s - %(message)s'),
-    #                6: logging.Formatter('%(asctime)s - %(msecs)d - %(relativeCreated)d - %(levelname)s - %(message)s')}
+    # 用字典保存日志输出格式 format_dict = {0: logging.Formatter('%(message)s'), 1: logging.Formatter('%(name)s - %(message)s'),
+    # 2: logging.Formatter('%(filename)s - %(module)s - %(lineno)d - %(levelname)s - %(message)s'),
+    # 3: logging.Formatter('%(thread)d - %(threadName)s - %(process)d - %(message)s'), 4: logging.Formatter('%(
+    # funcName)s - %(created)f - %(levelname)s - %(message)s'), 5: logging.Formatter('%(pathname)s - %(levelno)s - %(
+    # levelname)s - %(message)s'), 6: logging.Formatter('%(asctime)s - %(msecs)d - %(relativeCreated)d - %(
+    # levelname)s - %(message)s')}
 
     def __init__(self, log_file=None, flag=2, log_tags='', log_format=0):
         self.log_file = log_file if log_file else 'log.txt'
