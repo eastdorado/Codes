@@ -39,6 +39,8 @@ class MyGaussianBlur(ImageFilter.Filter):
             return image.gaussian_blur(self.radius)
 
 
+
+
 class PopForm(QtWidgets.QWidget):
     """ 框架类，提供子窗体，自动隐藏或关闭，弱交互 """
 
@@ -313,7 +315,7 @@ class BackForm(QtWidgets.QWidget):
         self.data = DataMiko()
 
     def _init_ui_main(self):
-        self.setGeometry(2200, 200, 1200, 740)  # 黄金分割
+        self.setGeometry(200, 200, 1200, 740)  # 黄金分割
 
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.Tool)  # 设置窗体无边框
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)  # 设置背景透明
@@ -800,8 +802,8 @@ class BackForm(QtWidgets.QWidget):
         self.tw_genres.header().setDefaultSectionSize(20)  # 设置行间距
         self.tw_genres.header().setMinimumSectionSize(20)  # 设置行间距
         # self.tw_genres.setColumnWidth(0, 30)  # 设置树形控件的列的宽度
-        self.tw_genres.setColumnWidth(0, 260)  # 设置树形控件的列的宽度
-        self.tw_genres.setColumnWidth(1, 30)  # 设置树形控件的列的宽度
+        # self.tw_genres.setColumnWidth(0, 60)  # 设置树形控件的列的宽度
+        # self.tw_genres.setColumnWidth(1, 30)  # 设置树形控件的列的宽度
         self.tw_genres.header().setSectionResizeMode(1, QtWidgets.QHeaderView.Fixed)  # 第一列不能拉伸
         self.tw_genres.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)  # 仅第二列可以拉伸
         self.tw_genres.header().setStretchLastSection(False)  # 关键是去掉默认的拉伸最后列属性
@@ -823,6 +825,7 @@ class BackForm(QtWidgets.QWidget):
         all_genre.setIcon(0, QtGui.QIcon('E:/Codes/res/images/569972.gif'))
         all_genre.setSizeHint(0, size_item)
         all_genre.setText(1, str(1))
+        all_genre.setTextAlignment(1, QtCore.Qt.AlignRight)
         # # root.setSizeHint(0, QtCore.QSize(0, 0))  # 隐藏了root，免得鼠标露出轨迹
         # # root.setSizeHint(1, QtCore.QSize(10, 0))
         # # todo 优化2 设置根节点的背景颜色
